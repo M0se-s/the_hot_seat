@@ -86,9 +86,9 @@ export function DashboardPage() {
           {/* Empty state */}
           {loaded && projects.length === 0 && (
             <Panel className="py-12 text-center">
-              <p className="text-sm text-zinc-500">No case files yet.</p>
+              <p className="text-sm font-semibold text-zinc-500">No case files loaded.</p>
               <p className="mt-1 text-xs text-zinc-600">
-                Create your first case file to get started.
+                A Hot Seat session requires a case file to begin.
               </p>
             </Panel>
           )}

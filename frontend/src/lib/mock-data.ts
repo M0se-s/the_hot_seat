@@ -134,3 +134,69 @@ export const mockProjects: Project[] = [
     updatedAt: "2026-05-08T09:00:00Z",
   },
 ];
+
+// ─── Pressure Questions ────────────────────────────────────────────────────────
+
+export const mockPressureQuestions: Record<string, string[]> = {
+  "session-crisis-panel": [
+    "What is the single most damaging fact in the source material?",
+    "If a journalist quoted your own words back to you, which line would hurt the most?",
+    "Who is accountable for the failure, and have you named them?",
+    "What are you not saying — and why will it come out anyway?",
+    "If this were leaked tomorrow, what would the headline be?",
+  ],
+  "session-pitch-panel": [
+    "Who is this painfully for, and how do you know?",
+    "What claim in your pitch is not supported by evidence?",
+    "Why would someone pay for this instead of building it themselves?",
+    "What is your weakest assumption about the buyer?",
+    "If a competitor copied your pitch word-for-word, what would they still be missing?",
+  ],
+  "session-demo-panel": [
+    "What is the moment people will remember?",
+    "What makes this Runway-native instead of generic roleplay?",
+    "What claim is actually supported by the materials?",
+    "If the demo crashed halfway through, what would the audience still take away?",
+    "What is the one thing you are afraid they will ask?",
+  ],
+};
+
+// ─── Feedback Report ──────────────────────────────────────────────────────────
+
+export const mockFeedbackReport = {
+  finalVerdict: "Strong with gaps",
+  overallScore: 78,
+  worstDodge: "Pivot to roadmap when asked for current metrics.",
+  bestRecovery: "Admitting the integration limitation upfront and focusing on the core value prop.",
+  unsupportedClaim: "Claiming 10x ROI without specific case study data in the source materials.",
+  trustLoss: "High risk. Using vague promises instead of factual claims deteriorates credibility immediately.",
+  weakestAnswer: "The answer broadened the target user without evidence from the provided materials.",
+  strongerAnswer: "Our first user is a hackathon team or founder preparing for a high-stakes demo, because that is the scenario supported by the current materials.",
+  transcript: "Judge: Who is this painfully for?\n\nUser: This is for anyone who wants to pitch better. Sales teams, founders, students...\n\nJudge: The source material only mentions founders preparing for a demo. Why broaden the scope?\n\nUser: Well, the roadmap will support everyone eventually.\n\nJudge: We're not buying the roadmap. We're buying the product today. Who pays, how much, and why now?",
+  judgeScores: [
+    {
+      judgeId: "judge-1",
+      name: "Rowan Pierce",
+      role: "Demo Judge",
+      score: 85,
+      feedback: "Strong opening, but the wow moment was delayed by unnecessary background context.",
+      sourceSupport: "Medium"
+    },
+    {
+      judgeId: "judge-2",
+      name: "Nova Reed",
+      role: "Product Judge",
+      score: 70,
+      feedback: "Failed to clearly define the immediate target user. 'Anyone' is not a market.",
+      sourceSupport: "Low"
+    },
+    {
+      judgeId: "judge-3",
+      name: "Victor Quell",
+      role: "Finance Judge",
+      score: 80,
+      feedback: "Good recovery on the integration limits, but revenue assumptions are completely unsupported by the provided evidence.",
+      sourceSupport: "Low"
+    }
+  ]
+};
