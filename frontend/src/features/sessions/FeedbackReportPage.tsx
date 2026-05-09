@@ -9,28 +9,34 @@ import { JudgeScorePanel } from "./JudgeScorePanel";
 import { TranscriptPanel } from "./TranscriptPanel";
 import { StrongerAnswerPanel } from "./StrongerAnswerPanel";
 import { TrustRiskPanel } from "./TrustRiskPanel";
-import { getProjectById } from "@/lib/project-store";
-import { mockFeedbackReport } from "@/lib/mock-data";
+import { getProject, getSessionFeedback } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Button } from "@/components/ui/Button";
-import type { Project } from "@/lib/types";
+import type { Project, FeedbackReport } from "@/lib/types";
 
 export function FeedbackReportPage() {
   const params = useParams<{ sessionId: string }>();
   const router = useRouter();
   
   const [project, setProject] = useState<Project | null>(null);
+  const [report, setReport] = useState<FeedbackReport | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!params.sessionId) return;
-    
-    // For MVP, sessionId is just the projectId
-    const foundProject = getProjectById(params.sessionId);
-    if (foundProject) {
-      setProject(foundProject);
+    async function load() {
+      if (!params.sessionId) return;
+      
+      const foundProject = await getProject(params.sessionId);
+      if (foundProject) {
+        setProject(foundProject);
+        if (foundProject.lastVerdict !== "Not tested yet") {
+          const feedback = await getSessionFeedback(params.sessionId);
+          setReport(feedback);
+        }
+      }
+      setLoaded(true);
     }
-    setLoaded(true);
+    load();
   }, [params.sessionId]);
 
   if (!loaded) {
@@ -57,7 +63,7 @@ export function FeedbackReportPage() {
     );
   }
 
-  if (project.lastVerdict === "Not tested yet") {
+  if (project.lastVerdict === "Not tested yet" || !report) {
     return (
       <AppShell>
         <div className="py-20 text-center">
@@ -103,29 +109,36 @@ export function FeedbackReportPage() {
         {/* Top Section: Verdict & Scores */}
         <div className="space-y-6">
           <VerdictSummary 
-            verdict={mockFeedbackReport.finalVerdict}
-            score={mockFeedbackReport.overallScore}
-            worstDodge={mockFeedbackReport.worstDodge}
-            bestRecovery={mockFeedbackReport.bestRecovery}
+            verdict={report.finalVerdict}
+            score={report.overallScore}
+            worstDodge={report.weakestMoment}
+            bestRecovery={report.bestMoment}
           />
           
-          <JudgeScorePanel scores={mockFeedbackReport.judgeScores} />
+          <JudgeScorePanel scores={report.scoring.judges.map(j => ({
+            judgeId: j.judgeName,
+            name: j.judgeName,
+            role: j.category,
+            score: j.score,
+            feedback: j.notes,
+            sourceSupport: j.label === "High Support" ? "High" : j.label === "Medium Support" ? "Medium" : "Low"
+          }))} />
         </div>
 
         {/* Middle Section: Coach-cut Analysis */}
         <div className="grid gap-6 md:grid-cols-2">
           <TrustRiskPanel 
-            unsupportedClaim={mockFeedbackReport.unsupportedClaim}
-            trustLoss={mockFeedbackReport.trustLoss}
+            unsupportedClaim={report.feedback[1] ?? ""}
+            trustLoss={report.feedback[0] ?? ""}
           />
           <StrongerAnswerPanel 
-            weakestAnswer={mockFeedbackReport.weakestAnswer}
-            strongerAnswer={mockFeedbackReport.strongerAnswer}
+            weakestAnswer={report.weaknesses[0] ?? ""}
+            strongerAnswer={report.suggestedStrongerAnswers[0] ?? ""}
           />
         </div>
 
         {/* Bottom Section: Transcript */}
-        <TranscriptPanel transcript={mockFeedbackReport.transcript} />
+        <TranscriptPanel transcript={report.transcript.join("\n\n")} />
 
       </div>
     </AppShell>

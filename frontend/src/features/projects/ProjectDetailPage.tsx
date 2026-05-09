@@ -10,8 +10,7 @@ import { Button } from "@/components/ui/Button";
 import { JudgePanel } from "./JudgePanel";
 import { EvidencePanel } from "./EvidencePanel";
 import { PressureQuestionsPanel } from "./PressureQuestionsPanel";
-import { getProjectById } from "@/lib/project-store";
-import { mockSessionTypes } from "@/lib/mock-data";
+import { getProject, getSessionType } from "@/lib/api";
 import { verdictTone } from "@/styles/design-tokens";
 import { routes } from "@/lib/routes";
 import type { Project, SessionType, VerdictLabel } from "@/lib/types";
@@ -19,19 +18,21 @@ import type { Project, SessionType, VerdictLabel } from "@/lib/types";
 export function ProjectDetailPage() {
   const params = useParams<{ projectId: string }>();
   const [project, setProject] = useState<Project | null>(null);
-  const [sessionType, setSessionType] = useState<SessionType | undefined>();
+  const [sessionType, setSessionType] = useState<SessionType | null>(null);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!params.projectId) return;
-    const found = getProjectById(params.projectId);
-    if (found) {
-      setProject(found);
-      setSessionType(
-        mockSessionTypes.find((st) => st.id === found.sessionTypeId)
-      );
+    async function load() {
+      if (!params.projectId) return;
+      const foundProject = await getProject(params.projectId);
+      if (foundProject) {
+        setProject(foundProject);
+        const foundSessionType = await getSessionType(foundProject.sessionTypeId);
+        setSessionType(foundSessionType);
+      }
+      setLoaded(true);
     }
-    setLoaded(true);
+    load();
   }, [params.projectId]);
 
   // ── Loading state ──────────────────────────────────────────
@@ -185,7 +186,7 @@ export function ProjectDetailPage() {
         />
 
         {/* ── Pressure Questions ──────────────────────────────── */}
-        <PressureQuestionsPanel sessionTypeId={project.sessionTypeId} />
+        <PressureQuestionsPanel questions={project.suggestedQuestions ?? []} />
 
         {/* ── Enter Hot Seat CTA ──────────────────────────────── */}
         <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-6">

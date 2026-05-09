@@ -1,40 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/Button";
 import { SessionTypeSelector } from "./SessionTypeSelector";
 import { EvidenceInput } from "./EvidenceInput";
-import { saveProject } from "@/lib/project-store";
-import { mockSessionTypes } from "@/lib/mock-data";
+import { createProject, getSessionTypes } from "@/lib/api";
 import { routes } from "@/lib/routes";
+import { SessionType } from "@/lib/types";
 
 export function CreateProjectForm() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [sessionTypeId, setSessionTypeId] = useState(mockSessionTypes[0]?.id ?? "");
+  const [sessionTypeId, setSessionTypeId] = useState("");
   const [evidence, setEvidence] = useState("");
-  
-  const isValid = title.trim() !== "" && description.trim() !== "" && sessionTypeId !== "";
+  const [sessionTypes, setSessionTypes] = useState<SessionType[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function load() {
+      const types = await getSessionTypes();
+      setSessionTypes(types);
+      if (types.length > 0) setSessionTypeId(types[0].id);
+    }
+    load();
+  }, []);
+  
+  const isValid = title.trim() !== "" && description.trim() !== "" && sessionTypeId !== "" && !isSubmitting;
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
 
-    // Create a new project and save to local storage
-    const now = new Date().toISOString();
-    saveProject({
-      id: `project-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+    setIsSubmitting(true);
+    await createProject({
       title: title.trim(),
       description: description.trim(),
       sessionTypeId,
-      evidenceCount: evidence.trim() ? 1 : 0,
-      sourceText: evidence.trim() || undefined,
-      status: "draft",
-      lastVerdict: "Not tested yet",
-      createdAt: now,
-      updatedAt: now,
+      pastedTexts: evidence.trim() ? [evidence.trim()] : [],
     });
 
     router.push(routes.dashboard);
@@ -71,7 +75,7 @@ export function CreateProjectForm() {
         </div>
       </div>
 
-      <SessionTypeSelector value={sessionTypeId} onChange={setSessionTypeId} />
+      <SessionTypeSelector value={sessionTypeId} sessionTypes={sessionTypes} onChange={setSessionTypeId} />
 
       <EvidenceInput value={evidence} onChange={setEvidence} />
 

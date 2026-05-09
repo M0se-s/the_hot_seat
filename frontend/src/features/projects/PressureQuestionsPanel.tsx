@@ -1,13 +1,11 @@
 import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
-import { mockPressureQuestions } from "@/lib/mock-data";
 
 interface PressureQuestionsPanelProps {
-  sessionTypeId: string;
+  questions: string[];
 }
 
-export function PressureQuestionsPanel({ sessionTypeId }: PressureQuestionsPanelProps) {
-  const questions = mockPressureQuestions[sessionTypeId] ?? [];
+export function PressureQuestionsPanel({ questions }: PressureQuestionsPanelProps) {
 
   return (
     <div className="space-y-3">

@@ -104,6 +104,14 @@ export const mockProjects: Project[] = [
       "Pressure-test The Hot Seat\u2019s Runway hackathon demo flow using the team\u2019s own project materials and implementation plan.",
     sessionTypeId: "session-demo-panel",
     evidenceCount: 1,
+    pastedTexts: [],
+    fileUrls: [],
+    extractedContext: [],
+    suggestedQuestions: [
+      "What is the moment people will remember?",
+      "What makes this Runway-native instead of generic roleplay?",
+      "What claim is actually supported by the materials?"
+    ],
     status: "draft",
     lastVerdict: "Not tested yet",
     createdAt: "2026-05-08T12:00:00Z",
@@ -116,6 +124,13 @@ export const mockProjects: Project[] = [
       "Rehearse a high-stakes response using only pasted source materials and documented claims.",
     sessionTypeId: "session-crisis-panel",
     evidenceCount: 0,
+    pastedTexts: [],
+    fileUrls: [],
+    extractedContext: [],
+    suggestedQuestions: [
+      "What is the single most damaging fact in the source material?",
+      "Who is accountable for the failure, and have you named them?"
+    ],
     status: "draft",
     lastVerdict: "Not tested yet",
     createdAt: "2026-05-08T10:30:00Z",
@@ -128,6 +143,13 @@ export const mockProjects: Project[] = [
       "Stress-test positioning, target user clarity, and unsupported business claims before a live pitch.",
     sessionTypeId: "session-pitch-panel",
     evidenceCount: 0,
+    pastedTexts: [],
+    fileUrls: [],
+    extractedContext: [],
+    suggestedQuestions: [
+      "Who is this painfully for, and how do you know?",
+      "Why would someone pay for this instead of building it themselves?"
+    ],
     status: "draft",
     lastVerdict: "Not tested yet",
     createdAt: "2026-05-08T09:00:00Z",
@@ -163,40 +185,54 @@ export const mockPressureQuestions: Record<string, string[]> = {
 
 // ─── Feedback Report ──────────────────────────────────────────────────────────
 
-export const mockFeedbackReport = {
+export const mockFeedbackReport: any = {
   finalVerdict: "Strong with gaps",
   overallScore: 78,
-  worstDodge: "Pivot to roadmap when asked for current metrics.",
-  bestRecovery: "Admitting the integration limitation upfront and focusing on the core value prop.",
-  unsupportedClaim: "Claiming 10x ROI without specific case study data in the source materials.",
-  trustLoss: "High risk. Using vague promises instead of factual claims deteriorates credibility immediately.",
-  weakestAnswer: "The answer broadened the target user without evidence from the provided materials.",
-  strongerAnswer: "Our first user is a hackathon team or founder preparing for a high-stakes demo, because that is the scenario supported by the current materials.",
-  transcript: "Judge: Who is this painfully for?\n\nUser: This is for anyone who wants to pitch better. Sales teams, founders, students...\n\nJudge: The source material only mentions founders preparing for a demo. Why broaden the scope?\n\nUser: Well, the roadmap will support everyone eventually.\n\nJudge: We're not buying the roadmap. We're buying the product today. Who pays, how much, and why now?",
-  judgeScores: [
-    {
-      judgeId: "judge-1",
-      name: "Rowan Pierce",
-      role: "Demo Judge",
-      score: 85,
-      feedback: "Strong opening, but the wow moment was delayed by unnecessary background context.",
-      sourceSupport: "Medium"
-    },
-    {
-      judgeId: "judge-2",
-      name: "Nova Reed",
-      role: "Product Judge",
-      score: 70,
-      feedback: "Failed to clearly define the immediate target user. 'Anyone' is not a market.",
-      sourceSupport: "Low"
-    },
-    {
-      judgeId: "judge-3",
-      name: "Victor Quell",
-      role: "Finance Judge",
-      score: 80,
-      feedback: "Good recovery on the integration limits, but revenue assumptions are completely unsupported by the provided evidence.",
-      sourceSupport: "Low"
-    }
+  scoring: {
+    judges: [
+      {
+        judgeName: "Rowan Pierce",
+        category: "Demo Judge",
+        score: 85,
+        label: "Medium Support",
+        notes: "Strong opening, but the wow moment was delayed by unnecessary background context.",
+      },
+      {
+        judgeName: "Nova Reed",
+        category: "Product Judge",
+        score: 70,
+        label: "Low Support",
+        notes: "Failed to clearly define the immediate target user. 'Anyone' is not a market.",
+      },
+      {
+        judgeName: "Victor Quell",
+        category: "Finance Judge",
+        score: 80,
+        label: "Low Support",
+        notes: "Good recovery on the integration limits, but revenue assumptions are completely unsupported by the provided evidence.",
+      }
+    ]
+  },
+  feedback: [
+    "You pivoted to the roadmap when asked for current metrics.",
+    "Claiming 10x ROI without specific case study data deteriorates credibility immediately."
+  ],
+  strengths: [
+    "Admitting the integration limitation upfront and focusing on the core value prop."
+  ],
+  weaknesses: [
+    "The answer broadened the target user without evidence from the provided materials."
+  ],
+  bestMoment: "Admitting the integration limitation upfront and focusing on the core value prop.",
+  weakestMoment: "Pivot to roadmap when asked for current metrics.",
+  suggestedStrongerAnswers: [
+    "Our first user is a hackathon team or founder preparing for a high-stakes demo, because that is the scenario supported by the current materials."
+  ],
+  transcript: [
+    "Judge: Who is this painfully for?",
+    "User: This is for anyone who wants to pitch better. Sales teams, founders, students...",
+    "Judge: The source material only mentions founders preparing for a demo. Why broaden the scope?",
+    "User: Well, the roadmap will support everyone eventually.",
+    "Judge: We're not buying the roadmap. We're buying the product today. Who pays, how much, and why now?"
   ]
 };

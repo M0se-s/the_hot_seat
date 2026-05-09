@@ -1,19 +1,20 @@
-import { mockSessionTypes } from "@/lib/mock-data";
 import { cn } from "@/lib/utils";
+import { SessionType } from "@/lib/types";
 
 interface SessionTypeSelectorProps {
   value: string;
+  sessionTypes: SessionType[];
   onChange: (value: string) => void;
 }
 
-export function SessionTypeSelector({ value, onChange }: SessionTypeSelectorProps) {
+export function SessionTypeSelector({ value, sessionTypes, onChange }: SessionTypeSelectorProps) {
   return (
     <div className="space-y-3">
       <label className="text-sm font-medium text-zinc-300">
         Session Type
       </label>
       <div className="grid gap-3 sm:grid-cols-3">
-        {mockSessionTypes.map((st) => {
+        {sessionTypes.map((st) => {
           const isSelected = value === st.id;
           return (
             <button

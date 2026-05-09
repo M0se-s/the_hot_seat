@@ -7,20 +7,28 @@ import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { ProjectCard } from "./ProjectCard";
-import { mockSessionTypes } from "@/lib/mock-data";
-import { getProjects } from "@/lib/project-store";
+import { getProjects, getSessionTypes } from "@/lib/api";
 import { productTagline } from "@/styles/design-tokens";
 import { routes } from "@/lib/routes";
-import { Project } from "@/lib/types";
+import { Project, SessionType } from "@/lib/types";
 
 export function DashboardPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
+  const [sessionTypes, setSessionTypes] = useState<SessionType[]>([]);
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    setProjects(getProjects());
-    setLoaded(true);
+    async function loadData() {
+      const [fetchedProjects, fetchedSessionTypes] = await Promise.all([
+        getProjects(),
+        getSessionTypes(),
+      ]);
+      setProjects(fetchedProjects);
+      setSessionTypes(fetchedSessionTypes);
+      setLoaded(true);
+    }
+    loadData();
   }, []);
 
   return (
@@ -96,7 +104,7 @@ export function DashboardPage() {
           {/* Project list */}
           {loaded &&
             projects.map((project) => {
-              const sessionType = mockSessionTypes.find(
+              const sessionType = sessionTypes.find(
                 (st) => st.id === project.sessionTypeId
               );
               return (
@@ -132,7 +140,7 @@ export function DashboardPage() {
               Active Judges
             </h3>
             <div className="space-y-2">
-              {mockSessionTypes
+              {sessionTypes
                 .flatMap((st) => st.judges)
                 .filter(
                   (judge, i, arr) =>

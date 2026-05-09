@@ -7,8 +7,7 @@ import { RunwayCharacterStage } from "./RunwayCharacterStage";
 import { HotSeatTimer } from "./HotSeatTimer";
 import { SessionControlBar } from "./SessionControlBar";
 import { ManualTranscriptPanel } from "./ManualTranscriptPanel";
-import { getProjectById, updateProject } from "@/lib/project-store";
-import { mockSessionTypes } from "@/lib/mock-data";
+import { getProject, getSessionType, endSession } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
@@ -23,27 +22,24 @@ export function LiveSessionPage() {
   const [loaded, setLoaded] = useState(false);
 
   useEffect(() => {
-    if (!params.sessionId) return;
-    
-    // For MVP, sessionId is just the projectId
-    const foundProject = getProjectById(params.sessionId);
-    if (foundProject) {
-      setProject(foundProject);
-      const foundSession = mockSessionTypes.find(st => st.id === foundProject.sessionTypeId);
-      if (foundSession) {
-        setSessionType(foundSession);
+    async function load() {
+      if (!params.sessionId) return;
+      const foundProject = await getProject(params.sessionId);
+      if (foundProject) {
+        setProject(foundProject);
+        const foundSession = await getSessionType(foundProject.sessionTypeId);
+        if (foundSession) {
+          setSessionType(foundSession);
+        }
       }
+      setLoaded(true);
     }
-    setLoaded(true);
+    load();
   }, [params.sessionId]);
 
-  const handleEndSession = () => {
+  const handleEndSession = async () => {
     if (project) {
-      updateProject(project.id, {
-        status: "ready",
-        lastVerdict: "Strong with gaps",
-        updatedAt: new Date().toISOString()
-      });
+      await endSession(project.id, { transcript: [] });
     }
     router.push(routes.feedback(project?.id ?? ""));
   };
