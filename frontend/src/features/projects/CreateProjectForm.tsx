@@ -17,31 +17,63 @@ export function CreateProjectForm() {
   const [evidence, setEvidence] = useState("");
   const [sessionTypes, setSessionTypes] = useState<SessionType[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isLoadingTypes, setIsLoadingTypes] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      const types = await getSessionTypes();
-      setSessionTypes(types);
-      if (types.length > 0) setSessionTypeId(types[0].id);
+      try {
+        setError(null);
+        const types = await getSessionTypes();
+        setSessionTypes(types);
+        if (types.length > 0) setSessionTypeId(types[0].id);
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+        );
+      } finally {
+        setIsLoadingTypes(false);
+      }
     }
     load();
   }, []);
   
-  const isValid = title.trim() !== "" && description.trim() !== "" && sessionTypeId !== "" && !isSubmitting;
+  const hasEvidence = evidence.trim() !== "";
+  const isValid =
+    title.trim() !== "" &&
+    description.trim() !== "" &&
+    sessionTypeId !== "" &&
+    !isSubmitting &&
+    !isLoadingTypes;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!isValid) return;
 
-    setIsSubmitting(true);
-    await createProject({
-      title: title.trim(),
-      description: description.trim(),
-      sessionTypeId,
-      pastedTexts: evidence.trim() ? [evidence.trim()] : [],
-    });
+    try {
+      setIsSubmitting(true);
+      setError(null);
 
-    router.push(routes.dashboard);
+      const project = await createProject({
+        title: title.trim(),
+        description: description.trim(),
+        sessionTypeId,
+        pastedTexts: evidence.trim() ? [evidence.trim()] : [],
+        fileUrls: [],
+      });
+
+      router.push(routes.project(project.id));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -78,6 +110,24 @@ export function CreateProjectForm() {
       <SessionTypeSelector value={sessionTypeId} sessionTypes={sessionTypes} onChange={setSessionTypeId} />
 
       <EvidenceInput value={evidence} onChange={setEvidence} />
+
+      {!hasEvidence && (
+        <div className="rounded-md border border-amber-900/40 bg-amber-950/20 px-4 py-3">
+          <p className="text-xs leading-relaxed text-amber-300">
+            No evidence loaded. The Hot Seat will be weaker until source material is provided.
+          </p>
+        </div>
+      )}
+
+      {error && (
+        <div className="rounded-md border border-red-900/40 bg-red-950/20 px-4 py-3">
+          <p className="text-xs leading-relaxed text-red-300">
+            {error.includes("fetch")
+              ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+              : error}
+          </p>
+        </div>
+      )}
 
       <div className="flex items-center justify-end gap-3 border-t border-zinc-800 pt-6">
         <Button

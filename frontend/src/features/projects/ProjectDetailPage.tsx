@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { Panel } from "@/components/ui/Panel";
@@ -10,30 +10,63 @@ import { Button } from "@/components/ui/Button";
 import { JudgePanel } from "./JudgePanel";
 import { EvidencePanel } from "./EvidencePanel";
 import { PressureQuestionsPanel } from "./PressureQuestionsPanel";
-import { getProject, getSessionType } from "@/lib/api";
+import { createSession, getProject, getSessionType } from "@/lib/api";
 import { verdictTone } from "@/styles/design-tokens";
 import { routes } from "@/lib/routes";
 import type { Project, SessionType, VerdictLabel } from "@/lib/types";
 
-export function ProjectDetailPage() {
-  const params = useParams<{ projectId: string }>();
+type ProjectDetailPageProps = {
+  projectId: string;
+};
+
+export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
+  const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [isStartingSession, setIsStartingSession] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      if (!params.projectId) return;
-      const foundProject = await getProject(params.projectId);
-      if (foundProject) {
-        setProject(foundProject);
-        const foundSessionType = await getSessionType(foundProject.sessionTypeId);
-        setSessionType(foundSessionType);
+      try {
+        setError(null);
+        const foundProject = await getProject(projectId);
+        if (foundProject) {
+          setProject(foundProject);
+          const foundSessionType = await getSessionType(foundProject.sessionTypeId);
+          setSessionType(foundSessionType);
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+        );
+      } finally {
+        setLoaded(true);
       }
-      setLoaded(true);
     }
     load();
-  }, [params.projectId]);
+  }, [projectId]);
+
+  async function handleEnterHotSeat() {
+    if (!project || isStartingSession) return;
+
+    try {
+      setIsStartingSession(true);
+      setError(null);
+      const session = await createSession({ projectId: project.id });
+      router.push(routes.liveSession(session.id));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+      );
+      setIsStartingSession(false);
+    }
+  }
 
   // ── Loading state ──────────────────────────────────────────
   if (!loaded) {
@@ -72,8 +105,9 @@ export function ProjectDetailPage() {
               Case file not found
             </h2>
             <p className="mt-2 text-sm text-zinc-500">
-              The project you&apos;re looking for doesn&apos;t exist or was
-              removed.
+              {error
+                ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+                : "The project you're looking for doesn't exist or was removed."}
             </p>
             <div className="mt-6">
               <Link href={routes.dashboard}>
@@ -179,6 +213,16 @@ export function ProjectDetailPage() {
         {/* ── Judge Panel ─────────────────────────────────────── */}
         {sessionType && <JudgePanel judges={sessionType.judges} />}
 
+        {error && (
+          <Panel className="border-red-900/40 bg-red-950/20">
+            <p className="text-sm text-red-300">
+              {error.includes("fetch")
+                ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+                : error}
+            </p>
+          </Panel>
+        )}
+
         {/* ── Evidence ────────────────────────────────────────── */}
         <EvidencePanel
           sourceText={project.sourceText}
@@ -201,11 +245,13 @@ export function ProjectDetailPage() {
                 Runway Character.
               </p>
             </div>
-            <Link href={routes.liveSession(project.id)}>
-              <Button variant="primary">
-                Enter Hot Seat
-              </Button>
-            </Link>
+            <Button
+              variant="primary"
+              onClick={handleEnterHotSeat}
+              disabled={isStartingSession || !sessionType}
+            >
+              {isStartingSession ? "Opening Hot Seat..." : "Enter Hot Seat"}
+            </Button>
           </div>
           <div className="mt-4 rounded-md border border-zinc-800/60 bg-zinc-950/50 px-3 py-2">
             <p className="text-[11px] leading-relaxed text-zinc-500">

@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { VerdictSummary } from "./VerdictSummary";
@@ -9,34 +8,48 @@ import { JudgeScorePanel } from "./JudgeScorePanel";
 import { TranscriptPanel } from "./TranscriptPanel";
 import { StrongerAnswerPanel } from "./StrongerAnswerPanel";
 import { TrustRiskPanel } from "./TrustRiskPanel";
-import { getProject, getSessionFeedback } from "@/lib/api";
+import { getProject, getSession, getSessionFeedback } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Button } from "@/components/ui/Button";
-import type { Project, FeedbackReport } from "@/lib/types";
+import type { FeedbackReport, Project, Session } from "@/lib/types";
 
-export function FeedbackReportPage() {
-  const params = useParams<{ sessionId: string }>();
+type FeedbackReportPageProps = {
+  sessionId: string;
+};
   
+export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
+  const [session, setSession] = useState<Session | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [report, setReport] = useState<FeedbackReport | null>(null);
   const [loaded, setLoaded] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      if (!params.sessionId) return;
-      
-      const foundProject = await getProject(params.sessionId);
-      if (foundProject) {
-        setProject(foundProject);
-        if (foundProject.lastVerdict !== "Not tested yet") {
-          const feedback = await getSessionFeedback(params.sessionId);
+      try {
+        setError(null);
+
+        const foundSession = await getSession(sessionId);
+        if (foundSession) {
+          setSession(foundSession);
+          const foundProject = await getProject(foundSession.projectId);
+          setProject(foundProject);
+
+          const feedback = await getSessionFeedback(sessionId);
           setReport(feedback);
         }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+        );
+      } finally {
+        setLoaded(true);
       }
-      setLoaded(true);
     }
     load();
-  }, [params.sessionId]);
+  }, [sessionId]);
 
   if (!loaded) {
     return (
@@ -51,28 +64,67 @@ export function FeedbackReportPage() {
     );
   }
   
-  if (!project) {
+  if (!session || !project) {
     return (
       <AppShell>
         <div className="py-20 text-center">
           <h2 className="text-lg font-semibold text-zinc-200">Session not found</h2>
-          <p className="mt-2 text-sm text-zinc-500">The requested session report could not be loaded.</p>
+          <p className="mt-2 text-sm text-zinc-500">
+            {error
+              ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+              : "The requested session report could not be loaded."}
+          </p>
         </div>
       </AppShell>
     );
   }
 
-  if (project.lastVerdict === "Not tested yet" || !report) {
+  if (!report) {
+    return (
+      <AppShell>
+        <div className="mx-auto max-w-4xl space-y-6 py-20">
+          <div className="text-center">
+            <h2 className="text-lg font-semibold text-zinc-200">
+              Feedback generation is not connected yet.
+            </h2>
+            <p className="mt-2 text-sm text-zinc-500">
+              Sprint 11 will analyze this transcript with Featherless.
+            </p>
+            <div className="mt-6">
+              <Link href={routes.project(project.id)}>
+                <Button variant="secondary" size="sm">
+                  Back to Case File
+                </Button>
+              </Link>
+            </div>
+          </div>
+
+          <TranscriptPanel
+            transcript={
+              session.transcript.length > 0
+                ? session.transcript.join("\n\n")
+                : "No transcript was saved for this session."
+            }
+          />
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error) {
     return (
       <AppShell>
         <div className="py-20 text-center">
-          <h2 className="text-lg font-semibold text-zinc-200">Feedback unavailable</h2>
-          <p className="mt-2 text-sm text-zinc-500">No feedback yet.</p>
-          <p className="mt-1 text-xs text-zinc-600">Complete a Hot Seat session to generate a coach-cut report.</p>
+          <h2 className="text-lg font-semibold text-zinc-200">
+            Unable to reach backend.
+          </h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Make sure FastAPI is running at http://localhost:8000.
+          </p>
           <div className="mt-6">
             <Link href={routes.project(project.id)}>
               <Button variant="secondary" size="sm">
-                ← Back to Case File
+                Back to Case File
               </Button>
             </Link>
           </div>

@@ -1,5 +1,12 @@
 import { FeedbackReportPage } from "@/features/sessions/FeedbackReportPage";
 
-export default function Page() {
-  return <FeedbackReportPage />;
+type Props = {
+  params: Promise<{
+    sessionId: string;
+  }>;
+};
+
+export default async function Page({ params }: Props) {
+  const { sessionId } = await params;
+  return <FeedbackReportPage sessionId={sessionId} />;
 }

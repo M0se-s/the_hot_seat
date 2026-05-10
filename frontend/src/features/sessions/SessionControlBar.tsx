@@ -2,9 +2,13 @@ import { Button } from "@/components/ui/Button";
 
 interface SessionControlBarProps {
   onEndSession: () => void;
+  isEnding?: boolean;
 }
 
-export function SessionControlBar({ onEndSession }: SessionControlBarProps) {
+export function SessionControlBar({
+  onEndSession,
+  isEnding = false,
+}: SessionControlBarProps) {
   return (
     <div className="flex items-center justify-between rounded-lg border border-red-900/20 bg-red-950/10 p-4">
       <div className="flex items-center gap-4">
@@ -18,8 +22,8 @@ export function SessionControlBar({ onEndSession }: SessionControlBarProps) {
         </div>
       </div>
       
-      <Button variant="danger" onClick={onEndSession}>
-        End Session
+      <Button variant="danger" onClick={onEndSession} disabled={isEnding}>
+        {isEnding ? "Ending..." : "End Session"}
       </Button>
     </div>
   );

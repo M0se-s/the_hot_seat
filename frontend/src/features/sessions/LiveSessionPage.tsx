@@ -1,47 +1,94 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { AppShell } from "@/components/layout/AppShell";
 import { RunwayCharacterStage } from "./RunwayCharacterStage";
 import { HotSeatTimer } from "./HotSeatTimer";
 import { SessionControlBar } from "./SessionControlBar";
 import { ManualTranscriptPanel } from "./ManualTranscriptPanel";
-import { getProject, getSessionType, endSession } from "@/lib/api";
+import { endSession, getProject, getSession, getSessionType, startSession } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
-import type { Project, SessionType } from "@/lib/types";
+import type { Project, Session, SessionType } from "@/lib/types";
 
-export function LiveSessionPage() {
-  const params = useParams<{ sessionId: string }>();
+type LiveSessionPageProps = {
+  sessionId: string;
+};
+
+export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
   const router = useRouter();
   
+  const [session, setSession] = useState<Session | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
+  const [transcriptText, setTranscriptText] = useState("");
   const [loaded, setLoaded] = useState(false);
+  const [isEnding, setIsEnding] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
-      if (!params.sessionId) return;
-      const foundProject = await getProject(params.sessionId);
-      if (foundProject) {
-        setProject(foundProject);
-        const foundSession = await getSessionType(foundProject.sessionTypeId);
-        if (foundSession) {
-          setSessionType(foundSession);
+      try {
+        setError(null);
+
+        const foundSession = await getSession(sessionId);
+        if (!foundSession) {
+          setLoaded(true);
+          return;
         }
+
+        const activeSession =
+          foundSession.state === "created"
+            ? await startSession(foundSession.id)
+            : foundSession;
+
+        setSession(activeSession);
+        setTranscriptText(activeSession.transcript.join("\n"));
+
+        const foundProject = await getProject(activeSession.projectId);
+        if (foundProject) {
+          setProject(foundProject);
+          const foundSessionType = await getSessionType(foundProject.sessionTypeId);
+          if (foundSessionType) {
+            setSessionType(foundSessionType);
+          }
+        }
+      } catch (err) {
+        setError(
+          err instanceof Error
+            ? err.message
+            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+        );
+      } finally {
+        setLoaded(true);
       }
-      setLoaded(true);
     }
     load();
-  }, [params.sessionId]);
+  }, [sessionId]);
 
   const handleEndSession = async () => {
-    if (project) {
-      await endSession(project.id, { transcript: [] });
+    if (!session || isEnding) return;
+
+    try {
+      setIsEnding(true);
+      setError(null);
+      await endSession(session.id, {
+        transcript: transcriptText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter(Boolean),
+      });
+      router.push(routes.feedback(session.id));
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+      );
+      setIsEnding(false);
     }
-    router.push(routes.feedback(project?.id ?? ""));
   };
 
   if (!loaded) {
@@ -57,18 +104,24 @@ export function LiveSessionPage() {
     );
   }
   
-  if (!project || !sessionType) {
+  if (!session || !project || !sessionType) {
     return (
       <AppShell>
         <div className="py-20 text-center">
           <h2 className="text-lg font-semibold text-zinc-200">Session not found</h2>
-          <p className="mt-2 text-sm text-zinc-500">The requested session could not be loaded.</p>
+          <p className="mt-2 text-sm text-zinc-500">
+            {error
+              ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+              : "The requested session could not be loaded."}
+          </p>
         </div>
       </AppShell>
     );
   }
 
-  const activeJudge = sessionType.judges[0];
+  const activeJudge =
+    sessionType.judges.find((judge) => judge.id === session.activeJudgeId) ??
+    sessionType.judges[0];
   const panelJudges = sessionType.judges.slice(1);
 
   return (
@@ -94,10 +147,22 @@ export function LiveSessionPage() {
           {/* Left Column: Stage & Transcript */}
           <div className="flex flex-col gap-6">
             <RunwayCharacterStage activeJudge={activeJudge} />
+            {error && (
+              <Panel className="border-red-900/40 bg-red-950/20">
+                <p className="text-sm text-red-300">
+                  {error.includes("fetch")
+                    ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+                    : error}
+                </p>
+              </Panel>
+            )}
             <div className="flex-1 min-h-75">
-              <ManualTranscriptPanel />
+              <ManualTranscriptPanel
+                value={transcriptText}
+                onChange={setTranscriptText}
+              />
             </div>
-            <SessionControlBar onEndSession={handleEndSession} />
+            <SessionControlBar onEndSession={handleEndSession} isEnding={isEnding} />
           </div>
           
           {/* Right Column: Timer & Sidebar */}

@@ -37,6 +37,7 @@ export function mapProjectFromApi(project: ApiProject): Project {
     title: project.title,
     description: project.description ?? "",
     sessionTypeId: project.session_type_id,
+    sourceText: project.pasted_texts?.join("\n\n") ?? "",
     fileUrls: project.file_urls ?? [],
     pastedTexts: project.pasted_texts ?? [],
     extractedContext: project.extracted_context ?? [],

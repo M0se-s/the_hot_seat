@@ -35,7 +35,7 @@ export function RunwayCharacterStage({ activeJudge }: RunwayCharacterStageProps)
             <span className="font-semibold text-red-400/90">Runway Character not connected yet.</span>
           </p>
           <p className="mt-2 text-xs text-zinc-400">
-            This stage will host the active judge during live sessions. For now, use the manual transcript to document the pressure session offline.
+            Manual transcript mode is active.
           </p>
         </div>
       </div>

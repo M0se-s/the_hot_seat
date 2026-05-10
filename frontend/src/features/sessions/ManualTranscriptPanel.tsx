@@ -3,8 +3,26 @@
 import { useState } from "react";
 import { Panel } from "@/components/ui/Panel";
 
-export function ManualTranscriptPanel() {
-  const [transcript, setTranscript] = useState("");
+type ManualTranscriptPanelProps = {
+  value?: string;
+  onChange?: (value: string) => void;
+};
+
+export function ManualTranscriptPanel({
+  value,
+  onChange,
+}: ManualTranscriptPanelProps) {
+  const [localTranscript, setLocalTranscript] = useState("");
+  const transcript = value ?? localTranscript;
+
+  function handleChange(nextValue: string) {
+    if (onChange) {
+      onChange(nextValue);
+      return;
+    }
+
+    setLocalTranscript(nextValue);
+  }
 
   return (
     <Panel className="flex h-full min-h-75 flex-col p-0! overflow-hidden">
@@ -21,7 +39,7 @@ export function ManualTranscriptPanel() {
         className="w-full flex-1 resize-none bg-zinc-950 p-4 font-sans text-sm leading-relaxed text-zinc-300 placeholder-zinc-700 focus:outline-none focus:ring-0"
         placeholder="Type session notes, key questions asked, or paste a rough transcript..."
         value={transcript}
-        onChange={(e) => setTranscript(e.target.value)}
+        onChange={(e) => handleChange(e.target.value)}
       />
     </Panel>
   );

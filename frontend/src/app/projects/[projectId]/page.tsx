@@ -1,5 +1,12 @@
 import { ProjectDetailPage } from "@/features/projects/ProjectDetailPage";
 
-export default function Page() {
-  return <ProjectDetailPage />;
+type Props = {
+  params: Promise<{
+    projectId: string;
+  }>;
+};
+
+export default async function Page({ params }: Props) {
+  const { projectId } = await params;
+  return <ProjectDetailPage projectId={projectId} />;
 }
