@@ -33,6 +33,7 @@ class HotSeatSession(Base):
 
     transcript: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, nullable=False)
     feedback: Mapped[list[str]] = mapped_column(ARRAY(Text), default=list, nullable=False)
+    feedback_report: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     scoring: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
     overall_score: Mapped[float | None] = mapped_column(Numeric, nullable=True)
     final_verdict: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -6,6 +6,9 @@ class Settings(BaseSettings):
     api_title: str = "The Hot Seat API"
     cors_origins: str = "http://localhost:3000"
     database_url: str
+    featherless_api_key: str | None = None
+    featherless_base_url: str = "https://api.featherless.ai/v1"
+    featherless_model: str = "deepseek-ai/DeepSeek-V3-0324"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

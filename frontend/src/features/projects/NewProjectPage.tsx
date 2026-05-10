@@ -22,7 +22,7 @@ export function NewProjectPage() {
             Open New Case File
           </h1>
           <p className="mt-1.5 text-sm text-zinc-500">
-            Define the scenario, select the pressure panel, and upload source materials.
+            Define the scenario, select the pressure panel, and paste source material.
           </p>
         </div>
 
