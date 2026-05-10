@@ -26,7 +26,7 @@ export function PressureQuestionsPanel({ questions }: PressureQuestionsPanelProp
       {questions.length > 0 ? (
         <div className="space-y-2">
           {questions.map((question, index) => (
-            <Panel key={index} className="flex items-start gap-3 !p-4">
+            <Panel key={index} className="flex items-start gap-3 p-4!">
               <span className="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border border-zinc-700 bg-zinc-800 text-[10px] font-bold text-zinc-400">
                 {index + 1}
               </span>

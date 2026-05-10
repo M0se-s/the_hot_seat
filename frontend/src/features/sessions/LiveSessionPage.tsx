@@ -94,7 +94,7 @@ export function LiveSessionPage() {
           {/* Left Column: Stage & Transcript */}
           <div className="flex flex-col gap-6">
             <RunwayCharacterStage activeJudge={activeJudge} />
-            <div className="flex-1 min-h-[300px]">
+            <div className="flex-1 min-h-75">
               <ManualTranscriptPanel />
             </div>
             <SessionControlBar onEndSession={handleEndSession} />

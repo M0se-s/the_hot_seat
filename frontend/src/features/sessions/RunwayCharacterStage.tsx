@@ -8,9 +8,9 @@ interface RunwayCharacterStageProps {
 
 export function RunwayCharacterStage({ activeJudge }: RunwayCharacterStageProps) {
   return (
-    <Panel className="relative flex min-h-[400px] flex-col items-center justify-center overflow-hidden border-zinc-800 bg-zinc-950/80 p-6">
+    <Panel className="relative flex min-h-100 flex-col items-center justify-center overflow-hidden border-zinc-800 bg-zinc-950/80 p-6">
       {/* Subtle red spotlight effect */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-red-950/20 via-zinc-950/0 to-zinc-950/0 pointer-events-none"></div>
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,var(--tw-gradient-stops))] from-red-950/20 via-zinc-950/0 to-zinc-950/0 pointer-events-none"></div>
       
       <div className="relative z-10 flex flex-col items-center text-center">
         <div className="mb-4">
