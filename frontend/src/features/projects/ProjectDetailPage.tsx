@@ -10,10 +10,11 @@ import { Button } from "@/components/ui/Button";
 import { JudgePanel } from "./JudgePanel";
 import { EvidencePanel } from "./EvidencePanel";
 import { PressureQuestionsPanel } from "./PressureQuestionsPanel";
+import { FileUploader } from "./FileUploader";
 import { createSession, getProject, getSessionType } from "@/lib/api";
 import { verdictTone } from "@/styles/design-tokens";
 import { routes } from "@/lib/routes";
-import type { Project, SessionType, VerdictLabel } from "@/lib/types";
+import type { Project, SessionType, UploadResponse, VerdictLabel } from "@/lib/types";
 
 type ProjectDetailPageProps = {
   projectId: string;
@@ -26,29 +27,36 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
   const [loaded, setLoaded] = useState(false);
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [lastUpload, setLastUpload] = useState<UploadResponse | null>(null);
+
+  async function load() {
+    try {
+      setError(null);
+      const foundProject = await getProject(projectId);
+      if (foundProject) {
+        setProject(foundProject);
+        const foundSessionType = await getSessionType(foundProject.sessionTypeId);
+        setSessionType(foundSessionType);
+      }
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+      );
+    } finally {
+      setLoaded(true);
+    }
+  }
 
   useEffect(() => {
-    async function load() {
-      try {
-        setError(null);
-        const foundProject = await getProject(projectId);
-        if (foundProject) {
-          setProject(foundProject);
-          const foundSessionType = await getSessionType(foundProject.sessionTypeId);
-          setSessionType(foundSessionType);
-        }
-      } catch (err) {
-        setError(
-          err instanceof Error
-            ? err.message
-            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
-        );
-      } finally {
-        setLoaded(true);
-      }
-    }
     load();
   }, [projectId]);
+
+  const handleUploadSuccess = (result: UploadResponse) => {
+    setLastUpload(result);
+    load(); // Reload project data after successful upload
+  };
 
   async function handleEnterHotSeat() {
     if (!project || isStartingSession) return;
@@ -224,13 +232,40 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         )}
 
         {/* ── Evidence ────────────────────────────────────────── */}
-        <EvidencePanel
-          sourceText={project.sourceText}
-          evidenceCount={project.evidenceCount}
-        />
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="space-y-8">
+            <Panel className="space-y-4">
+              <div>
+                <h2 className="text-lg font-semibold text-zinc-100">Source Materials</h2>
+                <p className="text-xs text-zinc-500 mt-1">Upload PDF or text files to provide context for the panel.</p>
+              </div>
+              <FileUploader projectId={projectId} onUploadSuccess={handleUploadSuccess} />
+              {lastUpload && (
+                <div className="flex items-start gap-3 rounded-lg border border-emerald-800/40 bg-emerald-950/20 px-4 py-3">
+                  <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                  <div className="min-w-0">
+                    <p className="text-xs font-semibold text-emerald-400">
+                      {lastUpload.filename} uploaded
+                    </p>
+                    <p className="text-xs text-slate-500 mt-0.5">
+                      {lastUpload.extractedText.length.toLocaleString()} characters extracted
+                    </p>
+                  </div>
+                </div>
+              )}
+            </Panel>
+            
+            <EvidencePanel
+              sourceText={project.sourceText}
+              evidenceCount={project.evidenceCount}
+            />
+          </div>
 
-        {/* ── Pressure Questions ──────────────────────────────── */}
-        <PressureQuestionsPanel questions={project.suggestedQuestions ?? []} />
+          <div className="space-y-8">
+            {/* ── Pressure Questions ──────────────────────────────── */}
+            <PressureQuestionsPanel questions={project.suggestedQuestions ?? []} />
+          </div>
+        </div>
 
         {/* ── Enter Hot Seat CTA ──────────────────────────────── */}
         <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-6">

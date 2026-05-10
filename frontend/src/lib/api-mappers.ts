@@ -5,12 +5,14 @@ import type {
   ApiProject,
   ApiSession,
   ApiSessionType,
+  ApiUploadResponse,
   FeedbackReport,
   Judge,
   Project,
   RunwayStartResponse,
   Session,
   SessionType,
+  UploadResponse,
 } from "@/lib/types";
 
 export function mapJudgeFromApi(judge: ApiJudge): Judge {
@@ -39,12 +41,17 @@ export function mapSessionTypeFromApi(
 }
 
 export function mapProjectFromApi(project: ApiProject): Project {
+  const allTexts = [
+    ...(project.pasted_texts ?? []),
+    ...(project.extracted_context ?? []),
+  ].filter(Boolean);
+
   return {
     id: project.id,
     title: project.title,
     description: project.description ?? "",
     sessionTypeId: project.session_type_id,
-    sourceText: project.pasted_texts?.join("\n\n") ?? "",
+    sourceText: allTexts.join("\n\n"),
     fileUrls: project.file_urls ?? [],
     pastedTexts: project.pasted_texts ?? [],
     extractedContext: project.extracted_context ?? [],
@@ -106,5 +113,16 @@ export function mapRunwayStartFromApi(
     conversationId: response.conversation_id ?? null,
     state: response.state,
     raw: response.raw ?? null,
+  };
+}
+
+export function mapUploadResponseFromApi(
+  response: ApiUploadResponse,
+): UploadResponse {
+  return {
+    fileUrl: response.file_url,
+    filename: response.filename,
+    contentType: response.content_type,
+    extractedText: response.extracted_text,
   };
 }

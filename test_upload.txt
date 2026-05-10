@@ -1,0 +1,4 @@
+This is a test file for the Hot Seat project upload validation.
+It contains some text to be extracted.
+Project: Validation Test.
+Status: Success.

@@ -204,3 +204,17 @@ export type ApiFeedbackReport = {
   suggested_stronger_answers: string[];
   transcript: string[];
 };
+
+export type ApiUploadResponse = {
+  file_url: string;
+  filename: string;
+  content_type: string;
+  extracted_text: string;
+};
+
+export type UploadResponse = {
+  fileUrl: string;
+  filename: string;
+  contentType: string;
+  extractedText: string;
+};

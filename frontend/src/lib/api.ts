@@ -4,6 +4,7 @@ import {
   mapProjectFromApi,
   mapSessionFromApi,
   mapSessionTypeFromApi,
+  mapUploadResponseFromApi,
 } from "@/lib/api-mappers";
 
 import { getStoredFeedback, saveStoredFeedback } from "@/lib/storage";
@@ -14,6 +15,7 @@ import type {
   ApiProject,
   ApiSession,
   ApiSessionType,
+  ApiUploadResponse,
   CreateProjectInput,
   CreateSessionInput,
   EndSessionInput,
@@ -22,10 +24,43 @@ import type {
   RunwayStartResponse,
   Session,
   SessionType,
+  UploadResponse,
 } from "@/lib/types";
 
 const API_BASE_URL =
   process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+// ... (request function)
+
+export async function uploadProjectFile(
+  projectId: string,
+  file: File,
+): Promise<UploadResponse> {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  const response = await fetch(`${API_BASE_URL}/projects/${projectId}/uploads`, {
+    method: "POST",
+    body: formData,
+    // Let browser set Content-Type with boundary
+  });
+
+  if (!response.ok) {
+    let message = `Upload failed with status ${response.status}`;
+    try {
+      const errorBody = await response.json();
+      if (typeof errorBody?.detail === "string") {
+        message = errorBody.detail;
+      }
+    } catch {
+      // Keep default
+    }
+    throw new Error(message);
+  }
+
+  const result = (await response.json()) as ApiUploadResponse;
+  return mapUploadResponseFromApi(result);
+}
 
 async function request<T>(path: string, options?: RequestInit): Promise<T> {
   const response = await fetch(`${API_BASE_URL}${path}`, {
