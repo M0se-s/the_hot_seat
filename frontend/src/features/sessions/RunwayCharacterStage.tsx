@@ -138,25 +138,25 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
 
     if (isLoading) {
         return (
-            <Panel className="flex min-h-100 items-center justify-center border-zinc-800 bg-zinc-950/80 p-6">
-                <p className="text-sm text-zinc-500">Loading Runway character stage...</p>
+            <Panel className="flex min-h-[400px] items-center justify-center p-6">
+                <p className="text-sm text-zinc-500">Connecting Runway Character...</p>
             </Panel>
         );
     }
 
     if (!session || !project || !sessionType || !activeJudge || !avatarId) {
         return (
-            <Panel className="space-y-4 border-zinc-800 bg-zinc-950/80 p-6">
+            <Panel className="space-y-4 p-6">
                 <div>
                     <Badge variant="warning">Runway Character</Badge>
-                    <h2 className="mt-3 text-2xl font-semibold text-zinc-100">Disconnected</h2>
-                    <p className="mt-2 text-sm text-zinc-400">
-                        Manual transcript fallback remains available, but this session could not
-                        resolve a Runway avatar for the active judge.
+                    <h2 className="mt-3 text-2xl font-semibold text-zinc-800 dark:text-zinc-100">Runway did not connect.</h2>
+                    <p className="mt-2 text-sm text-zinc-500">
+                        Manual transcript mode is still available.
+                        End the session with transcript notes to generate a credibility report.
                     </p>
                 </div>
                 {error ? (
-                    <div className="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
+                    <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
                         {error}
                     </div>
                 ) : null}
@@ -165,17 +165,17 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
     }
 
     return (
-        <Panel className="space-y-5 border-zinc-800 bg-zinc-950/80 p-6">
+        <Panel className="space-y-5 p-6">
             <div className="flex items-start justify-between gap-4">
                 <div>
                     <Badge variant={stageStatus === "connected" ? "accent" : "warning"}>
                         Runway Character
                     </Badge>
-                    <h2 className="mt-3 text-2xl font-semibold text-zinc-100">
+                    <h2 className="mt-3 text-2xl font-semibold text-zinc-800 dark:text-zinc-100">
                         {activeJudge.name}
                     </h2>
-                    <p className="mt-2 text-sm text-zinc-400">{activeJudge.roleName}</p>
-                    <p className="mt-3 text-sm text-zinc-400">
+                    <p className="mt-2 text-sm text-zinc-500">{activeJudge.roleName}</p>
+                    <p className="mt-3 text-sm text-zinc-500">
                         Connect the active judge as a live Runway Character. Manual transcript
                         mode remains available as fallback.
                     </p>
@@ -192,21 +192,24 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
             </div>
 
             {error ? (
-                <div className="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
-                    {error}
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/60 dark:bg-red-950/30">
+                    <p className="text-sm font-medium text-red-700 dark:text-red-200">Runway did not connect.</p>
+                    <p className="mt-1 text-xs text-red-600 dark:text-red-400">{error}</p>
+                    <p className="mt-1 text-xs text-red-500 dark:text-red-500">Manual transcript mode is still available.</p>
                 </div>
             ) : null}
 
             {!runwaySession ? (
-                <div className="rounded-lg border border-zinc-800 bg-zinc-900/70 p-6 text-sm text-zinc-400">
-                    Character not connected yet.
+                <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-6 text-sm text-zinc-500 dark:border-zinc-800 dark:bg-zinc-900/70 dark:text-zinc-400">
+                    Character not connected. Click Connect to begin the live session.
                 </div>
             ) : !credentials ? (
-                <div className="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
-                    Connected session is missing transport credentials.
+                <div className="rounded-lg border border-red-200 bg-red-50 p-3 dark:border-red-900/60 dark:bg-red-950/30">
+                    <p className="text-sm text-red-700 dark:text-red-200">Runway did not connect.</p>
+                    <p className="mt-1 text-xs text-red-500">Connected session is missing transport credentials. Manual transcript mode is still available.</p>
                 </div>
             ) : (
-                <div className="space-y-4 rounded-xl border border-zinc-800 bg-zinc-900/50 p-4">
+                <div className="space-y-4 rounded-xl border border-zinc-200 bg-zinc-50 p-4 dark:border-zinc-800 dark:bg-zinc-900/50">
                     <AvatarSession
                         credentials={credentials}
                         audio
@@ -218,8 +221,8 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
                         }}
                     >
                         <div className="space-y-4">
-                            <div className="overflow-hidden rounded-xl border border-zinc-800 bg-zinc-950">
-                                <AvatarVideo className="h-90 w-full" />
+                            <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950">
+                                <AvatarVideo className="h-[360px] w-full" />
                             </div>
 
                             <div className="flex justify-end">
@@ -228,9 +231,9 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
                         </div>
                     </AvatarSession>
 
-                    <div className="rounded-lg border border-zinc-800 bg-zinc-950/70 p-3 text-xs text-zinc-400">
-                        <p>Runway session created.</p>
-                        <p className="mt-1 break-all text-zinc-500">
+                    <div className="rounded-lg border border-zinc-200 bg-zinc-50 p-3 text-xs text-zinc-500 dark:border-zinc-800 dark:bg-zinc-950/70 dark:text-zinc-400">
+                        <p>Runway Character connected.</p>
+                        <p className="mt-1 break-all text-zinc-400 dark:text-zinc-500">
                             Session ID: {runwaySession.sessionId}
                         </p>
                     </div>

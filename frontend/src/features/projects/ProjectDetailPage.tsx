@@ -122,7 +122,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
   if (!loaded) {
     return (
       <AppShell>
-        <div className="flex h-screen flex-col items-center justify-center bg-zinc-950">
+        <div className="flex h-[60vh] flex-col items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
           <p className="mt-4 text-sm font-semibold uppercase tracking-widest text-zinc-500">
             Loading case file...
@@ -139,7 +139,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         <div className="mx-auto max-w-4xl">
           <div className="py-20 text-center">
             <svg
-              className="mx-auto mb-4 h-10 w-10 text-zinc-700"
+              className="mx-auto mb-4 h-10 w-10 text-zinc-400 dark:text-zinc-700"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
@@ -151,12 +151,12 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
                 d="M9.75 9.75l4.5 4.5m0-4.5l-4.5 4.5M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
               />
             </svg>
-            <h2 className="text-lg font-semibold text-zinc-200">
-              Case file not found
+            <h2 className="text-lg font-semibold text-zinc-700 dark:text-zinc-200">
+              Case file not found.
             </h2>
             <p className="mt-2 text-sm text-zinc-500">
               {error
-                ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+                ? "Backend unavailable. Make sure FastAPI is running at http://localhost:8000."
                 : "The project you're looking for doesn't exist or was removed."}
             </p>
             <div className="mt-6">
@@ -208,13 +208,13 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         <Panel as="section" className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80">
+          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80">
                 Case File
               </p>
-              <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
+              <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
                 {project.title}
               </h1>
-              <p className="mt-2 text-sm leading-relaxed text-zinc-400">
+              <p className="mt-2 text-sm leading-relaxed text-zinc-600 dark:text-zinc-400">
                 {project.description}
               </p>
             </div>
@@ -226,7 +226,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
           </div>
 
           {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-zinc-800 pt-4 text-xs text-zinc-500">
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 border-t border-zinc-200 pt-4 text-xs text-zinc-500 dark:border-zinc-800">
             {sessionType && (
               <span>
                 <span className="text-zinc-600">Panel:</span>{" "}
@@ -268,10 +268,10 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         {sessionType && <JudgePanel judges={sessionType.judges} />}
 
         {error && (
-          <Panel className="border-red-900/40 bg-red-950/20">
-            <p className="text-sm text-red-300">
+          <Panel className="border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/20">
+            <p className="text-sm font-medium text-red-700 dark:text-red-300">
               {error.includes("fetch")
-                ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+                ? "Backend unavailable. Make sure FastAPI is running at http://localhost:8000."
                 : error}
             </p>
           </Panel>
@@ -304,10 +304,9 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             )}
           </Panel>
 
-          {/* Generation controls */}
           <Panel className="space-y-4">
             <div>
-              <h2 className="text-lg font-semibold text-zinc-100">Preparation</h2>
+              <h2 className="text-lg font-semibold text-zinc-900 dark:text-zinc-100">Preparation</h2>
               <p className="text-xs text-zinc-500 mt-1">
                 Run analysis on your source materials to generate grounded context and pressure questions.
               </p>
@@ -315,7 +314,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
 
             {!hasSourceMaterials && (
               <p className="text-sm text-zinc-500 italic">
-                Add pasted text or upload a source file before generating.
+                No evidence loaded. Add pasted text or upload a PDF/TXT source before generating.
               </p>
             )}
 
@@ -325,7 +324,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
                 id="btn-generate-context"
                 onClick={handleGenerateContext}
                 disabled={isGeneratingContext || !hasSourceMaterials}
-                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100 transition-colors hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 transition-colors hover:border-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-red-500 dark:hover:text-red-400"
               >
                 {isGeneratingContext ? "Generating context…" : "Generate context"}
               </button>
@@ -335,14 +334,14 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
                 id="btn-generate-questions"
                 onClick={handleGenerateQuestions}
                 disabled={isGeneratingQuestions || !hasSourceMaterials}
-                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100 transition-colors hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+                className="rounded-lg border border-zinc-300 px-4 py-2 text-sm font-semibold text-zinc-800 transition-colors hover:border-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50 dark:border-zinc-700 dark:text-zinc-100 dark:hover:border-red-500 dark:hover:text-red-400"
               >
-                {isGeneratingQuestions ? "Generating questions…" : "Generate pressure questions"}
+                {isGeneratingQuestions ? "Generating pressure questions…" : "Generate pressure questions"}
               </button>
             </div>
 
             {generationError && (
-              <div className="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
+              <div className="rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-700 dark:border-red-900/60 dark:bg-red-950/30 dark:text-red-200">
                 {generationError}
               </div>
             )}
@@ -354,10 +353,10 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             {/* Generated context */}
             <Panel className="space-y-3">
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Evidence Review
                 </h2>
-                <p className="text-xs text-zinc-600 mt-1">
+                <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
                   Source-grounded context extracted from your materials.
                 </p>
               </div>
@@ -365,14 +364,14 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
               {project.extractedContext.length > 0 ? (
                 <ul className="space-y-2">
                   {project.extractedContext.map((item, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
+                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500/70" />
                       <span>{item}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">
                   No generated context yet. Add source material, then generate context.
                 </p>
               )}
@@ -381,10 +380,10 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             {/* Pressure Questions */}
             <Panel className="space-y-3">
               <div>
-                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-400">
                   Pressure Questions
                 </h2>
-                <p className="text-xs text-zinc-600 mt-1">
+                <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
                   Questions your panel will use to pressure-test your answers.
                 </p>
               </div>
@@ -392,14 +391,14 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
               {project.suggestedQuestions.length > 0 ? (
                 <ul className="space-y-2">
                   {project.suggestedQuestions.map((question, idx) => (
-                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
+                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-700 dark:text-zinc-300">
                       <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500/70" />
                       <span>{question}</span>
                     </li>
                   ))}
                 </ul>
               ) : (
-                <p className="text-sm text-zinc-500">
+                <p className="text-sm text-zinc-400 dark:text-zinc-500 italic">
                   No pressure questions generated yet. Generate after adding source material.
                 </p>
               )}
@@ -408,15 +407,15 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         </div>
 
         {/* ── Enter Hot Seat CTA ──────────────────────────────── */}
-        <div className="rounded-lg border border-red-900/30 bg-red-950/10 p-6">
+        <div className="rounded-lg border border-red-200 bg-red-50/60 p-6 dark:border-red-900/30 dark:bg-red-950/10">
           <div className="flex items-center justify-between">
             <div>
-              <h3 className="text-sm font-semibold text-zinc-100">
+              <h3 className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">
                 Ready to face the panel?
               </h3>
-              <p className="mt-1 text-xs text-zinc-400">
+              <p className="mt-1 text-xs text-zinc-600 dark:text-zinc-400">
                 You&apos;ll enter a live session with{" "}
-                <span className="font-medium text-red-400">{sessionType?.judges[0]?.name ?? "the active judge"}</span> as the
+                <span className="font-medium text-red-600 dark:text-red-400">{sessionType?.judges[0]?.name ?? "the active judge"}</span> as the
                 Runway Character.
               </p>
             </div>
@@ -427,12 +426,6 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             >
               {isStartingSession ? "Opening Hot Seat..." : "Enter Hot Seat"}
             </Button>
-          </div>
-          <div className="mt-4 rounded-md border border-zinc-800/60 bg-zinc-950/50 px-3 py-2">
-            <p className="text-[11px] leading-relaxed text-zinc-500">
-              <span className="font-semibold text-zinc-400">Note:</span> Runway Character integration is pending backend storage.{" "}
-              The session will proceed with the timer, evidence, and manual transcript fallback.
-            </p>
           </div>
         </div>
       </div>

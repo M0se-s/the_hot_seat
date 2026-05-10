@@ -11,6 +11,7 @@ import { TrustRiskPanel } from "./TrustRiskPanel";
 import { analyzeSession, getProject, getSession, getSessionFeedback } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Button } from "@/components/ui/Button";
+import { Panel } from "@/components/ui/Panel";
 import type { FeedbackReport, Project, Session } from "@/lib/types";
 
 type FeedbackReportPageProps = {
@@ -45,7 +46,7 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
         setError(
           err instanceof Error
             ? err.message
-            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+            : "Backend unavailable. Make sure FastAPI is running at http://localhost:8000."
         );
       } finally {
         setLoaded(true);
@@ -60,8 +61,10 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
       setAnalyzeError(null);
       const generated = await analyzeSession(sessionId);
       setReport(generated);
-    } catch (err) {
-      setAnalyzeError("Feedback generation failed. The transcript is still saved.");
+    } catch {
+      setAnalyzeError(
+        "Feedback generation failed. The transcript is still saved. You can retry analysis."
+      );
     } finally {
       setAnalyzing(false);
     }
@@ -70,10 +73,25 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
   if (!loaded) {
     return (
       <AppShell>
-        <div className="flex h-screen flex-col items-center justify-center bg-zinc-950">
+        <div className="flex h-[60vh] flex-col items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
           <p className="mt-4 text-sm font-semibold uppercase tracking-widest text-zinc-500">
-            Loading feedback report...
+            Analyzing transcript against project materials...
+          </p>
+        </div>
+      </AppShell>
+    );
+  }
+
+  if (error && (!session || !project)) {
+    return (
+      <AppShell>
+        <div className="py-20 text-center">
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+            Backend unavailable.
+          </h2>
+          <p className="mt-2 text-sm text-zinc-500">
+            Make sure FastAPI is running at http://localhost:8000.
           </p>
         </div>
       </AppShell>
@@ -84,11 +102,11 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
     return (
       <AppShell>
         <div className="py-20 text-center">
-          <h2 className="text-lg font-semibold text-zinc-200">Session not found</h2>
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+            Session not found.
+          </h2>
           <p className="mt-2 text-sm text-zinc-500">
-            {error
-              ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
-              : "The requested session report could not be loaded."}
+            The requested session report could not be loaded.
           </p>
         </div>
       </AppShell>
@@ -109,14 +127,24 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
               </>
             ) : (
               <>
-                <h2 className="text-lg font-semibold text-zinc-200">
-                  Ready for Review
+                <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+                  Session ended. Ready for review.
                 </h2>
+                <p className="mt-2 text-sm text-zinc-500">
+                  {session.transcript.length === 0
+                    ? "No transcript saved. End the session with manual transcript notes to generate a credibility report."
+                    : "Generate the credibility report when ready."}
+                </p>
                 {analyzeError && (
-                  <p className="mt-2 text-sm text-red-500">{analyzeError}</p>
+                  <Panel className="mt-4 border-red-200 bg-red-50 text-left dark:border-red-900/40 dark:bg-red-950/20">
+                    <p className="text-sm text-red-700 dark:text-red-300">{analyzeError}</p>
+                  </Panel>
                 )}
                 <div className="mt-6 flex justify-center gap-4">
-                  <Button onClick={handleAnalyze}>
+                  <Button
+                    onClick={handleAnalyze}
+                    disabled={session.transcript.length === 0}
+                  >
                     Generate credibility report
                   </Button>
                   <Link href={routes.project(project.id)}>
@@ -127,37 +155,19 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
             )}
           </div>
 
-          {!analyzing && (
+          {!analyzing && session.transcript.length > 0 && (
             <TranscriptPanel
-              transcript={
-                session.transcript.length > 0
-                  ? session.transcript.join("\n\n")
-                  : "No transcript was saved for this session."
-              }
+              transcript={session.transcript.join("\n\n")}
             />
           )}
-        </div>
-      </AppShell>
-    );
-  }
 
-  if (error) {
-    return (
-      <AppShell>
-        <div className="py-20 text-center">
-          <h2 className="text-lg font-semibold text-zinc-200">
-            Unable to reach backend.
-          </h2>
-          <p className="mt-2 text-sm text-zinc-500">
-            Make sure FastAPI is running at http://localhost:8000.
-          </p>
-          <div className="mt-6">
-            <Link href={routes.project(project.id)}>
-              <Button variant="secondary" size="sm">
-                Back to Case File
-              </Button>
-            </Link>
-          </div>
+          {!analyzing && session.transcript.length === 0 && (
+            <Panel>
+              <p className="text-sm text-zinc-500 italic">
+                No transcript saved for this session.
+              </p>
+            </Panel>
+          )}
         </div>
       </AppShell>
     );
@@ -168,12 +178,12 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
       <div className="mx-auto max-w-5xl space-y-8">
 
         {/* Header */}
-        <div className="flex items-start justify-between border-b border-zinc-800 pb-6">
+        <div className="flex items-start justify-between border-b border-zinc-200 pb-6 dark:border-zinc-800">
           <div>
             <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80">
               Post-Session Report
             </p>
-            <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
+            <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {project.title}
             </h1>
           </div>
@@ -203,30 +213,38 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
           }))} />
         </div>
 
-        {/* Middle Section: Strengths & Weaknesses using existing or standard panels */}
+        {/* Middle Section: Strengths & Weaknesses */}
         <div className="grid gap-6 md:grid-cols-2">
           {/* Strengths */}
-          <div className="space-y-4 rounded-xl border border-red-900/20 bg-red-950/10 p-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-red-400">
+          <div className="space-y-4 rounded-xl border border-emerald-200 bg-emerald-50/60 p-6 dark:border-emerald-900/20 dark:bg-emerald-950/10">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-emerald-700 dark:text-emerald-400">
               Strengths
             </h3>
-            <ul className="list-inside list-disc space-y-2 text-sm text-zinc-300">
-              {report.strengths.map((str, i) => (
-                <li key={i}>{str}</li>
-              ))}
-            </ul>
+            {report.strengths.length === 0 ? (
+              <p className="text-xs text-zinc-500 italic">None identified.</p>
+            ) : (
+              <ul className="list-inside list-disc space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                {report.strengths.map((str, i) => (
+                  <li key={i}>{str}</li>
+                ))}
+              </ul>
+            )}
           </div>
 
           {/* Weaknesses */}
-          <div className="space-y-4 rounded-xl border border-red-900/20 bg-red-950/10 p-6">
-            <h3 className="text-sm font-semibold uppercase tracking-wider text-red-400">
+          <div className="space-y-4 rounded-xl border border-red-200 bg-red-50/60 p-6 dark:border-red-900/20 dark:bg-red-950/10">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-red-700 dark:text-red-400">
               Weaknesses
             </h3>
-            <ul className="list-inside list-disc space-y-2 text-sm text-zinc-300">
-              {report.weaknesses.map((wk, i) => (
-                <li key={i}>{wk}</li>
-              ))}
-            </ul>
+            {report.weaknesses.length === 0 ? (
+              <p className="text-xs text-zinc-500 italic">None identified.</p>
+            ) : (
+              <ul className="list-inside list-disc space-y-2 text-sm text-zinc-700 dark:text-zinc-300">
+                {report.weaknesses.map((wk, i) => (
+                  <li key={i}>{wk}</li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
 
@@ -235,9 +253,11 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
           strongerAnswer={report.suggestedStrongerAnswers.join("\n\n")}
         />
 
-        {/* Bottom Section: Transcript reviewed */}
+        {/* Bottom Section: Transcript */}
         <div className="space-y-4">
-          <h3 className="text-lg font-semibold text-zinc-200">Transcript reviewed</h3>
+          <h3 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+            Session transcript
+          </h3>
           <TranscriptPanel transcript={report.transcript.join("\n\n")} />
         </div>
 

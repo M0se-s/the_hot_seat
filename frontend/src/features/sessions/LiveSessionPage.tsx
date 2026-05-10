@@ -59,7 +59,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
         setError(
           err instanceof Error
             ? err.message
-            : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+            : "Backend unavailable. Make sure FastAPI is running at http://localhost:8000."
         );
       } finally {
         setLoaded(true);
@@ -77,7 +77,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
       try {
         await endRunwaySession(session.id);
       } catch {
-        // Keep the manual transcript fallback working even if Runway cleanup fails.
+        // Runway cleanup failed — manual transcript still works.
       }
       await endSession(session.id, {
         transcript: transcriptText
@@ -90,7 +90,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+          : "Failed to end session. The transcript is still saved. Try again."
       );
       setIsEnding(false);
     }
@@ -99,10 +99,10 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
   if (!loaded) {
     return (
       <AppShell>
-        <div className="flex h-screen flex-col items-center justify-center bg-zinc-950">
+        <div className="flex h-[60vh] flex-col items-center justify-center">
           <div className="h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
           <p className="mt-4 text-sm font-semibold uppercase tracking-widest text-zinc-500">
-            Loading session...
+            Creating Hot Seat session...
           </p>
         </div>
       </AppShell>
@@ -113,10 +113,12 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
     return (
       <AppShell>
         <div className="py-20 text-center">
-          <h2 className="text-lg font-semibold text-zinc-200">Session not found</h2>
+          <h2 className="text-lg font-semibold text-zinc-800 dark:text-zinc-200">
+            Session not found.
+          </h2>
           <p className="mt-2 text-sm text-zinc-500">
             {error
-              ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+              ? "Backend unavailable. Make sure FastAPI is running at http://localhost:8000."
               : "The requested session could not be loaded."}
           </p>
         </div>
@@ -131,12 +133,12 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
       <div className="mx-auto max-w-6xl space-y-6">
 
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+        <div className="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80 mb-1">
               The Hot Seat • Live
             </p>
-            <h1 className="text-xl font-bold tracking-tight text-zinc-100">
+            <h1 className="text-xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
               {project.title}
             </h1>
           </div>
@@ -149,16 +151,19 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
           {/* Left Column: Stage & Transcript */}
           <div className="flex flex-col gap-6">
             <RunwayCharacterStage sessionId={sessionId} />
+
             {error && (
-              <Panel className="border-red-900/40 bg-red-950/20">
-                <p className="text-sm text-red-300">
-                  {error.includes("fetch")
-                    ? "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
-                    : error}
+              <Panel className="border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/20">
+                <p className="text-sm font-medium text-red-700 dark:text-red-300">
+                  {error}
+                </p>
+                <p className="mt-1 text-xs text-red-500 dark:text-red-400">
+                  Manual transcript mode is still available.
                 </p>
               </Panel>
             )}
-            <div className="flex-1 min-h-75">
+
+            <div className="flex-1 min-h-[300px]">
               <ManualTranscriptPanel
                 value={transcriptText}
                 onChange={setTranscriptText}
@@ -172,29 +177,47 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
             <HotSeatTimer initialSeconds={300} />
 
             {/* Listening Panel */}
-            <Panel className="flex-1 bg-zinc-900/40">
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <Panel>
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
                 Listening Panel
               </h3>
-              <div className="space-y-4">
-                {panelJudges.map(judge => (
-                  <div key={judge.id} className="flex flex-col gap-1 rounded-md border border-zinc-800/60 bg-zinc-900/60 p-3">
-                    <span className="text-sm font-semibold text-zinc-300">{judge.name}</span>
-                    <span className="text-[10px] uppercase tracking-wider text-zinc-500">{judge.roleName}</span>
-                    <span className="mt-1 text-xs italic text-zinc-500">&ldquo;{judge.signaturePressure}&rdquo;</span>
-                  </div>
-                ))}
-              </div>
+              {panelJudges.length === 0 ? (
+                <p className="text-xs text-zinc-400 dark:text-zinc-600 italic">
+                  No additional panel judges for this session type.
+                </p>
+              ) : (
+                <div className="space-y-4">
+                  {panelJudges.map(judge => (
+                    <div key={judge.id} className="flex flex-col gap-1 rounded-md border border-zinc-200 bg-zinc-50 p-3 dark:border-zinc-800/60 dark:bg-zinc-900/60">
+                      <span className="text-sm font-semibold text-zinc-800 dark:text-zinc-300">{judge.name}</span>
+                      <span className="text-[10px] uppercase tracking-wider text-zinc-500">{judge.roleName}</span>
+                      <span className="mt-1 text-xs italic text-zinc-400 dark:text-zinc-500">&ldquo;{judge.signaturePressure}&rdquo;</span>
+                    </div>
+                  ))}
+                </div>
+              )}
             </Panel>
 
             {/* Evidence Quick Ref */}
-            <Panel className="flex-1 bg-zinc-900/40">
-              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">
+            <Panel>
+              <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
                 Evidence Sidebar
               </h3>
-              <div className="max-h-48 overflow-y-auto text-xs leading-relaxed text-zinc-400 whitespace-pre-wrap pr-2 custom-scrollbar">
-                {project.sourceText || <span className="italic text-zinc-600">No source materials provided for this case.</span>}
-              </div>
+              {project.extractedContext && project.extractedContext.length > 0 ? (
+                <ul className="space-y-2 max-h-48 overflow-y-auto">
+                  {project.extractedContext.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-xs text-zinc-600 dark:text-zinc-400">
+                      <span className="mt-1 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500/60" />
+                      {item}
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-xs italic text-zinc-400 dark:text-zinc-600">
+                  No evidence loaded.{" "}
+                  Add pasted text or upload a source file to generate context before the next session.
+                </p>
+              )}
             </Panel>
           </div>
         </div>

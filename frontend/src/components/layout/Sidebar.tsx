@@ -17,11 +17,11 @@ export function Sidebar() {
   const pathname = usePathname();
 
   return (
-    <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-800 bg-zinc-950">
+    <aside className="flex w-56 shrink-0 flex-col border-r border-zinc-200 bg-white dark:border-zinc-800 dark:bg-zinc-950">
       {/* Brand */}
-      <div className="flex h-14 items-center gap-2.5 border-b border-zinc-800 px-5">
+      <div className="flex h-14 items-center gap-2.5 border-b border-zinc-200 px-5 dark:border-zinc-800">
         <span className="inline-block h-2 w-2 rounded-full bg-red-500" />
-        <span className="text-sm font-bold tracking-tight text-zinc-100">
+        <span className="text-sm font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
           {productName}
         </span>
       </div>
@@ -35,10 +35,10 @@ export function Sidebar() {
             return (
               <span
                 key={item.label}
-                className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-zinc-600 cursor-not-allowed select-none"
+                className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-zinc-400 cursor-not-allowed select-none dark:text-zinc-600"
               >
                 {item.label}
-                <span className="text-[10px] uppercase tracking-wider text-zinc-700">
+                <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-700">
                   Soon
                 </span>
               </span>
@@ -52,8 +52,8 @@ export function Sidebar() {
               className={cn(
                 "flex items-center rounded-md px-3 py-2 text-sm font-medium transition-colors duration-100",
                 isActive
-                  ? "bg-zinc-800/80 text-zinc-100"
-                  : "text-zinc-400 hover:bg-zinc-800/40 hover:text-zinc-200"
+                  ? "bg-zinc-100 text-zinc-900 dark:bg-zinc-800/80 dark:text-zinc-100"
+                  : "text-zinc-600 hover:bg-zinc-100 hover:text-zinc-900 dark:text-zinc-400 dark:hover:bg-zinc-800/40 dark:hover:text-zinc-200"
               )}
             >
               {item.label}
@@ -63,9 +63,9 @@ export function Sidebar() {
       </nav>
 
       {/* Footer */}
-      <div className="border-t border-zinc-800 px-5 py-3">
-        <p className="text-[10px] uppercase tracking-widest text-zinc-700">
-          Sprint 2 · Local storage
+      <div className="border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
+        <p className="text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-700">
+          Sprint 15 · Theme polish
         </p>
       </div>
     </aside>
