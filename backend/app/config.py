@@ -8,9 +8,9 @@ class Settings(BaseSettings):
     database_url: str
     featherless_api_key: str | None = None
     featherless_base_url: str = "https://api.featherless.ai/v1"
-    featherless_model: str = "deepseek-ai/DeepSeek-V3-0324"
+    featherless_model: str = "openai/gpt-oss-120b"
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
-settings = Settings()
+settings = Settings() # type: ignore

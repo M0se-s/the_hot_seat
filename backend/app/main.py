@@ -1,12 +1,22 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import demo_user, health, judges, projects, session_types, sessions
+from app.api import (
+    analysis,
+    demo_user,
+    health,
+    judges,
+    projects,
+    session_types,
+    sessions,
+)
 from app.config import settings
 
 app = FastAPI(title=settings.api_title)
 
-origins = [origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()]
+origins = [
+    origin.strip() for origin in settings.cors_origins.split(",") if origin.strip()
+]
 
 app.add_middleware(
     CORSMiddleware,
@@ -17,6 +27,7 @@ app.add_middleware(
 )
 
 app.include_router(health.router)
+app.include_router(analysis.router)
 app.include_router(demo_user.router)
 app.include_router(judges.router)
 app.include_router(session_types.router)
