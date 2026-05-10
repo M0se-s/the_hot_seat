@@ -1,10 +1,13 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
+from sqlalchemy.orm import Session
 
-from app.data.seed_data import JUDGES
+from app.db import get_db
+from app.models.judge import Judge
+from app.schemas.judge import JudgeRead
 
 router = APIRouter(tags=["judges"])
 
 
-@router.get("/judges")
-def get_judges():
-    return JUDGES
+@router.get("/judges", response_model=list[JudgeRead])
+def get_judges(db: Session = Depends(get_db)):
+    return db.query(Judge).filter(Judge.is_active.is_(True)).order_by(Judge.name).all()

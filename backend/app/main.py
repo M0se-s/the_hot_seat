@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api import demo_user, health, judges, session_types
+from app.api import demo_user, health, judges, projects, session_types, sessions
 from app.config import settings
 
 app = FastAPI(title=settings.api_title)
@@ -20,3 +20,5 @@ app.include_router(health.router)
 app.include_router(demo_user.router)
 app.include_router(judges.router)
 app.include_router(session_types.router)
+app.include_router(projects.router)
+app.include_router(sessions.router)
