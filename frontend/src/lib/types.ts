@@ -218,3 +218,26 @@ export type UploadResponse = {
   contentType: string;
   extractedText: string;
 };
+
+export type ProjectContextGeneration = {
+  extractedContext: string[];
+  weakSpots: string[];
+  unsupportedRisks: string[];
+};
+
+export type ApiProjectContextGeneration = {
+  extracted_context: string[];
+  weak_spots: string[];
+  unsupported_risks: string[];
+};
+
+export type ProjectQuestionsGeneration = {
+  suggestedQuestions: string[];
+  followUpAngles: string[];
+};
+
+export type ApiProjectQuestionsGeneration = {
+  suggested_questions: string[];
+  follow_up_angles: string[];
+};
+

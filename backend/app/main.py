@@ -6,6 +6,7 @@ from app.api import (
     demo_user,
     health,
     judges,
+    project_analysis,
     projects,
     runway,
     session_types,
@@ -34,6 +35,7 @@ app.include_router(demo_user.router)
 app.include_router(judges.router)
 app.include_router(session_types.router)
 app.include_router(projects.router)
+app.include_router(project_analysis.router)
 app.include_router(runway.router)
 app.include_router(uploads.router)
 app.include_router(sessions.router)

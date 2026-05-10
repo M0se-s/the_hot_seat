@@ -1,5 +1,7 @@
 import {
   mapFeedbackReportFromApi,
+  mapProjectContextGenerationFromApi,
+  mapProjectQuestionsGenerationFromApi,
   mapRunwayStartFromApi,
   mapProjectFromApi,
   mapSessionFromApi,
@@ -13,6 +15,8 @@ import type {
   ApiFeedbackReport,
   ApiRunwayStartResponse,
   ApiProject,
+  ApiProjectContextGeneration,
+  ApiProjectQuestionsGeneration,
   ApiSession,
   ApiSessionType,
   ApiUploadResponse,
@@ -21,6 +25,8 @@ import type {
   EndSessionInput,
   FeedbackReport,
   Project,
+  ProjectContextGeneration,
+  ProjectQuestionsGeneration,
   RunwayStartResponse,
   Session,
   SessionType,
@@ -248,4 +254,32 @@ export async function saveSessionFeedback(
 ): Promise<FeedbackReport> {
   saveStoredFeedback(sessionId, feedback);
   return feedback;
+}
+
+export async function generateProjectContext(
+  projectId: string,
+): Promise<ProjectContextGeneration> {
+  const response = await request<ApiProjectContextGeneration>(
+    `/projects/${projectId}/generate-context`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+
+  return mapProjectContextGenerationFromApi(response);
+}
+
+export async function generateProjectQuestions(
+  projectId: string,
+): Promise<ProjectQuestionsGeneration> {
+  const response = await request<ApiProjectQuestionsGeneration>(
+    `/projects/${projectId}/generate-questions`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+
+  return mapProjectQuestionsGenerationFromApi(response);
 }

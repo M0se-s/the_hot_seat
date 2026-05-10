@@ -8,10 +8,15 @@ import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { JudgePanel } from "./JudgePanel";
-import { EvidencePanel } from "./EvidencePanel";
-import { PressureQuestionsPanel } from "./PressureQuestionsPanel";
 import { FileUploader } from "./FileUploader";
-import { createSession, getProject, getSessionType } from "@/lib/api";
+import { PressureQuestionsPanel } from "./PressureQuestionsPanel";
+import {
+  createSession,
+  generateProjectContext,
+  generateProjectQuestions,
+  getProject,
+  getSessionType,
+} from "@/lib/api";
 import { verdictTone } from "@/styles/design-tokens";
 import { routes } from "@/lib/routes";
 import type { Project, SessionType, UploadResponse, VerdictLabel } from "@/lib/types";
@@ -28,6 +33,9 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
   const [isStartingSession, setIsStartingSession] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastUpload, setLastUpload] = useState<UploadResponse | null>(null);
+  const [isGeneratingContext, setIsGeneratingContext] = useState(false);
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const [generationError, setGenerationError] = useState<string | null>(null);
 
   async function load() {
     try {
@@ -42,7 +50,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000.",
       );
     } finally {
       setLoaded(true);
@@ -55,8 +63,42 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
 
   const handleUploadSuccess = (result: UploadResponse) => {
     setLastUpload(result);
-    load(); // Reload project data after successful upload
+    load();
   };
+
+  async function handleGenerateContext() {
+    if (!project) return;
+
+    try {
+      setIsGeneratingContext(true);
+      setGenerationError(null);
+      await generateProjectContext(project.id);
+      await load();
+    } catch (err) {
+      setGenerationError(
+        err instanceof Error ? err.message : "Failed to generate context",
+      );
+    } finally {
+      setIsGeneratingContext(false);
+    }
+  }
+
+  async function handleGenerateQuestions() {
+    if (!project) return;
+
+    try {
+      setIsGeneratingQuestions(true);
+      setGenerationError(null);
+      await generateProjectQuestions(project.id);
+      await load();
+    } catch (err) {
+      setGenerationError(
+        err instanceof Error ? err.message : "Failed to generate questions",
+      );
+    } finally {
+      setIsGeneratingQuestions(false);
+    }
+  }
 
   async function handleEnterHotSeat() {
     if (!project || isStartingSession) return;
@@ -70,7 +112,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
       setError(
         err instanceof Error
           ? err.message
-          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000."
+          : "Unable to reach backend. Make sure FastAPI is running at http://localhost:8000.",
       );
       setIsStartingSession(false);
     }
@@ -131,6 +173,10 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
   }
 
   const tone = verdictTone[project.lastVerdict as VerdictLabel] ?? "neutral";
+  const hasSourceMaterials =
+    (project.pastedTexts?.length ?? 0) > 0 ||
+    (project.fileUrls?.length ?? 0) > 0 ||
+    (project.extractedContext?.length ?? 0) > 0;
 
   return (
     <AppShell>
@@ -231,39 +277,133 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
           </Panel>
         )}
 
-        {/* ── Evidence ────────────────────────────────────────── */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="space-y-8">
-            <Panel className="space-y-4">
-              <div>
-                <h2 className="text-lg font-semibold text-zinc-100">Source Materials</h2>
-                <p className="text-xs text-zinc-500 mt-1">Upload PDF or text files to provide context for the panel.</p>
-              </div>
-              <FileUploader projectId={projectId} onUploadSuccess={handleUploadSuccess} />
-              {lastUpload && (
-                <div className="flex items-start gap-3 rounded-lg border border-emerald-800/40 bg-emerald-950/20 px-4 py-3">
-                  <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
-                  <div className="min-w-0">
-                    <p className="text-xs font-semibold text-emerald-400">
-                      {lastUpload.filename} uploaded
-                    </p>
-                    <p className="text-xs text-slate-500 mt-0.5">
-                      {lastUpload.extractedText.length.toLocaleString()} characters extracted
-                    </p>
-                  </div>
+        {/* ── Source Materials & Generation ────────────────────── */}
+        <div className="space-y-6">
+
+          {/* Upload */}
+          <Panel className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-100">Source Materials</h2>
+              <p className="text-xs text-zinc-500 mt-1">
+                Upload PDF or TXT files to provide context for the panel.
+              </p>
+            </div>
+            <FileUploader projectId={projectId} onUploadSuccess={handleUploadSuccess} />
+            {lastUpload && (
+              <div className="flex items-start gap-3 rounded-lg border border-emerald-800/40 bg-emerald-950/20 px-4 py-3">
+                <div className="mt-0.5 h-2 w-2 shrink-0 rounded-full bg-emerald-500" />
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-emerald-400">
+                    {lastUpload.filename} uploaded
+                  </p>
+                  <p className="text-xs text-slate-500 mt-0.5">
+                    {lastUpload.extractedText.length.toLocaleString()} characters extracted
+                  </p>
                 </div>
+              </div>
+            )}
+          </Panel>
+
+          {/* Generation controls */}
+          <Panel className="space-y-4">
+            <div>
+              <h2 className="text-lg font-semibold text-zinc-100">Preparation</h2>
+              <p className="text-xs text-zinc-500 mt-1">
+                Run analysis on your source materials to generate grounded context and pressure questions.
+              </p>
+            </div>
+
+            {!hasSourceMaterials && (
+              <p className="text-sm text-zinc-500 italic">
+                Add pasted text or upload a source file before generating.
+              </p>
+            )}
+
+            <div className="flex flex-wrap gap-3">
+              <button
+                type="button"
+                id="btn-generate-context"
+                onClick={handleGenerateContext}
+                disabled={isGeneratingContext || !hasSourceMaterials}
+                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100 transition-colors hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isGeneratingContext ? "Generating context…" : "Generate context"}
+              </button>
+
+              <button
+                type="button"
+                id="btn-generate-questions"
+                onClick={handleGenerateQuestions}
+                disabled={isGeneratingQuestions || !hasSourceMaterials}
+                className="rounded-lg border border-zinc-700 px-4 py-2 text-sm font-semibold text-zinc-100 transition-colors hover:border-red-500 hover:text-red-400 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isGeneratingQuestions ? "Generating questions…" : "Generate pressure questions"}
+              </button>
+            </div>
+
+            {generationError && (
+              <div className="rounded-lg border border-red-900/60 bg-red-950/30 p-3 text-sm text-red-200">
+                {generationError}
+              </div>
+            )}
+          </Panel>
+
+          {/* Evidence Review */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+            {/* Generated context */}
+            <Panel className="space-y-3">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                  Evidence Review
+                </h2>
+                <p className="text-xs text-zinc-600 mt-1">
+                  Source-grounded context extracted from your materials.
+                </p>
+              </div>
+
+              {project.extractedContext.length > 0 ? (
+                <ul className="space-y-2">
+                  {project.extractedContext.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500/70" />
+                      <span>{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-zinc-500">
+                  No generated context yet. Add source material, then generate context.
+                </p>
               )}
             </Panel>
-            
-            <EvidencePanel
-              sourceText={project.sourceText}
-              evidenceCount={project.evidenceCount}
-            />
-          </div>
 
-          <div className="space-y-8">
-            {/* ── Pressure Questions ──────────────────────────────── */}
-            <PressureQuestionsPanel questions={project.suggestedQuestions ?? []} />
+            {/* Pressure Questions */}
+            <Panel className="space-y-3">
+              <div>
+                <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
+                  Pressure Questions
+                </h2>
+                <p className="text-xs text-zinc-600 mt-1">
+                  Questions your panel will use to pressure-test your answers.
+                </p>
+              </div>
+
+              {project.suggestedQuestions.length > 0 ? (
+                <ul className="space-y-2">
+                  {project.suggestedQuestions.map((question, idx) => (
+                    <li key={idx} className="flex items-start gap-2 text-sm text-zinc-300">
+                      <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-red-500/70" />
+                      <span>{question}</span>
+                    </li>
+                  ))}
+                </ul>
+              ) : (
+                <p className="text-sm text-zinc-500">
+                  No pressure questions generated yet. Generate after adding source material.
+                </p>
+              )}
+            </Panel>
           </div>
         </div>
 
@@ -290,7 +430,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
           </div>
           <div className="mt-4 rounded-md border border-zinc-800/60 bg-zinc-950/50 px-3 py-2">
             <p className="text-[11px] leading-relaxed text-zinc-500">
-              <span className="font-semibold text-zinc-400">Note:</span> Runway Character integration is pending backend storage. 
+              <span className="font-semibold text-zinc-400">Note:</span> Runway Character integration is pending backend storage.{" "}
               The session will proceed with the timer, evidence, and manual transcript fallback.
             </p>
           </div>

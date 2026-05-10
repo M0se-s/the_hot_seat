@@ -3,12 +3,16 @@ import type {
   ApiJudge,
   ApiRunwayStartResponse,
   ApiProject,
+  ApiProjectContextGeneration,
+  ApiProjectQuestionsGeneration,
   ApiSession,
   ApiSessionType,
   ApiUploadResponse,
   FeedbackReport,
   Judge,
   Project,
+  ProjectContextGeneration,
+  ProjectQuestionsGeneration,
   RunwayStartResponse,
   Session,
   SessionType,
@@ -124,5 +128,24 @@ export function mapUploadResponseFromApi(
     filename: response.filename,
     contentType: response.content_type,
     extractedText: response.extracted_text,
+  };
+}
+
+export function mapProjectContextGenerationFromApi(
+  response: ApiProjectContextGeneration,
+): ProjectContextGeneration {
+  return {
+    extractedContext: response.extracted_context ?? [],
+    weakSpots: response.weak_spots ?? [],
+    unsupportedRisks: response.unsupported_risks ?? [],
+  };
+}
+
+export function mapProjectQuestionsGenerationFromApi(
+  response: ApiProjectQuestionsGeneration,
+): ProjectQuestionsGeneration {
+  return {
+    suggestedQuestions: response.suggested_questions ?? [],
+    followUpAngles: response.follow_up_angles ?? [],
   };
 }
