@@ -10,7 +10,7 @@ interface HotSeatTimerProps {
 
 export function HotSeatTimer({ initialSeconds = 300 }: HotSeatTimerProps) {
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
-  const [isRunning, setIsRunning] = useState(true);
+  const [isRunning] = useState(true);
 
   useEffect(() => {
     if (!isRunning || timeLeft <= 0) return;

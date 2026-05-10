@@ -23,7 +23,11 @@ function statusLabel(status: string): string {
   }
 }
 
-function formatDate(iso: string): string {
+function formatDate(iso: string | undefined): string {
+  if (!iso) {
+    return "Unknown";
+  }
+
   const d = new Date(iso);
   return d.toLocaleDateString("en-US", {
     month: "short",

@@ -10,25 +10,38 @@ import { ProjectCard } from "./ProjectCard";
 import { getProjects, getSessionTypes } from "@/lib/api";
 import { productTagline } from "@/styles/design-tokens";
 import { routes } from "@/lib/routes";
-import { Project, SessionType } from "@/lib/types";
+import type { Project, SessionType } from "@/lib/types";
 
 export function DashboardPage() {
   const router = useRouter();
   const [projects, setProjects] = useState<Project[]>([]);
   const [sessionTypes, setSessionTypes] = useState<SessionType[]>([]);
-  const [loaded, setLoaded] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    async function loadData() {
-      const [fetchedProjects, fetchedSessionTypes] = await Promise.all([
-        getProjects(),
-        getSessionTypes(),
-      ]);
-      setProjects(fetchedProjects);
-      setSessionTypes(fetchedSessionTypes);
-      setLoaded(true);
+    async function loadDashboard() {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const [projectData, sessionTypeData] = await Promise.all([
+          getProjects(),
+          getSessionTypes(),
+        ]);
+
+        setProjects(projectData);
+        setSessionTypes(sessionTypeData);
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to load dashboard data"
+        );
+      } finally {
+        setIsLoading(false);
+      }
     }
-    loadData();
+
+    loadDashboard();
   }, []);
 
   return (
@@ -60,7 +73,7 @@ export function DashboardPage() {
       <div className="mb-6 flex flex-wrap items-center gap-2">
         <Badge variant="neutral">Evidence mode: Manual sources</Badge>
         <Badge variant="neutral">Active character: Mock only</Badge>
-        <Badge variant="warning">Backend: Pending</Badge>
+        <Badge variant={error ? "warning" : "success"}>Backend: {error ? "Unavailable" : "Connected"}</Badge>
         <Badge variant="danger">Runway: Not connected</Badge>
       </div>
 
@@ -72,16 +85,20 @@ export function DashboardPage() {
             <h2 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
               Open Case Files
             </h2>
-            {loaded && (
+            {!isLoading && !error && (
               <span className="text-xs text-zinc-600">
                 {projects.length} case{projects.length !== 1 ? "s" : ""}
               </span>
             )}
           </div>
 
-          {/* Loading skeleton */}
-          {!loaded && (
+          {isLoading && (
             <div className="space-y-4">
+              <Panel className="py-4 text-center">
+                <p className="text-sm font-semibold text-zinc-500">
+                  Loading dashboard...
+                </p>
+              </Panel>
               {[1, 2, 3].map((i) => (
                 <div
                   key={i}
@@ -91,18 +108,28 @@ export function DashboardPage() {
             </div>
           )}
 
-          {/* Empty state */}
-          {loaded && projects.length === 0 && (
+          {error && !isLoading && (
             <Panel className="py-12 text-center">
-              <p className="text-sm font-semibold text-zinc-500">No case files loaded.</p>
+              <p className="text-sm font-semibold text-zinc-500">
+                Unable to load dashboard data.
+              </p>
+              <p className="mt-1 text-xs text-zinc-600">{error}</p>
+            </Panel>
+          )}
+
+          {!isLoading && !error && projects.length === 0 && (
+            <Panel className="py-12 text-center">
+              <p className="text-sm font-semibold text-zinc-500">
+                No case files yet.
+              </p>
               <p className="mt-1 text-xs text-zinc-600">
                 A Hot Seat session requires a case file to begin.
               </p>
             </Panel>
           )}
 
-          {/* Project list */}
-          {loaded &&
+          {!isLoading &&
+            !error &&
             projects.map((project) => {
               const sessionType = sessionTypes.find(
                 (st) => st.id === project.sessionTypeId
@@ -128,7 +155,7 @@ export function DashboardPage() {
               Sprint 2 — case file creation from pasted source material.
             </ReadinessItem>
             <ReadinessItem>
-              Projects are stored in localStorage (no backend yet).
+              Projects, judges, session types, and sessions load from the backend.
             </ReadinessItem>
             <ReadinessItem>
               File upload will be enabled after backend storage is connected.

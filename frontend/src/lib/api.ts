@@ -1,15 +1,15 @@
 import {
-  getStoredProjects,
-  saveStoredProjects,
-  getStoredSessions,
-  saveStoredSessions,
-  getStoredFeedback,
-  saveStoredFeedback,
-} from "./storage";
+  mapProjectFromApi,
+  mapSessionFromApi,
+  mapSessionTypeFromApi,
+} from "@/lib/api-mappers";
 
-import { mockSessionTypes, mockPressureQuestions, mockFeedbackReport } from "./mock-data";
+import { getStoredFeedback, saveStoredFeedback } from "@/lib/storage";
 
 import type {
+  ApiProject,
+  ApiSession,
+  ApiSessionType,
   CreateProjectInput,
   CreateSessionInput,
   EndSessionInput,
@@ -17,150 +17,133 @@ import type {
   Project,
   Session,
   SessionType,
-} from "./types";
+} from "@/lib/types";
 
-function makeId(prefix: string) {
-  return `${prefix}-${crypto.randomUUID()}`;
+const API_BASE_URL =
+  process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:8000";
+
+async function request<T>(path: string, options?: RequestInit): Promise<T> {
+  const response = await fetch(`${API_BASE_URL}${path}`, {
+    ...options,
+    headers: {
+      "Content-Type": "application/json",
+      ...(options?.headers ?? {}),
+    },
+  });
+
+  if (!response.ok) {
+    let message = `Request failed with status ${response.status}`;
+
+    try {
+      const errorBody = await response.json();
+      if (typeof errorBody?.detail === "string") {
+        message = errorBody.detail;
+      }
+    } catch {
+      // Keep default error message.
+    }
+
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<T>;
 }
 
 export async function getProjects(): Promise<Project[]> {
-  return getStoredProjects();
+  const projects = await request<ApiProject[]>("/projects");
+  return projects.map(mapProjectFromApi);
 }
 
 export async function getProject(projectId: string): Promise<Project | null> {
-  const projects = getStoredProjects();
-  return projects.find((project) => project.id === projectId) ?? null;
+  try {
+    const project = await request<ApiProject>(`/projects/${projectId}`);
+    return mapProjectFromApi(project);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Project not found")) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
-export async function createProject(input: CreateProjectInput): Promise<Project> {
-  const projects = getStoredProjects();
+export async function createProject(
+  input: CreateProjectInput
+): Promise<Project> {
+  const project = await request<ApiProject>("/projects", {
+    method: "POST",
+    body: JSON.stringify({
+      title: input.title,
+      description: input.description,
+      session_type_id: input.sessionTypeId,
+      file_urls: input.fileUrls ?? [],
+      pasted_texts: input.pastedTexts,
+    }),
+  });
 
-  const project: Project = {
-    id: makeId("project"),
-    title: input.title,
-    description: input.description,
-    sessionTypeId: input.sessionTypeId,
-    pastedTexts: input.pastedTexts,
-    fileUrls: input.fileUrls ?? [],
-    extractedContext: [],
-    suggestedQuestions: mockPressureQuestions[input.sessionTypeId] ?? [],
-    evidenceCount: input.pastedTexts.filter(Boolean).length + (input.fileUrls?.length ?? 0),
-    status: "draft",
-    lastVerdict: "Not tested yet",
-    updatedAt: new Date().toISOString(),
-  };
-
-  saveStoredProjects([project, ...projects]);
-  return project;
-}
-
-export async function updateProject(projectId: string, updates: Partial<Project>): Promise<Project | null> {
-  const projects = getStoredProjects();
-  const index = projects.findIndex(p => p.id === projectId);
-  
-  if (index === -1) return null;
-  
-  const updated = { ...projects[index], ...updates, updatedAt: new Date().toISOString() };
-  projects[index] = updated;
-  
-  saveStoredProjects(projects);
-  return updated;
+  return mapProjectFromApi(project);
 }
 
 export async function getSessionTypes(): Promise<SessionType[]> {
-  return mockSessionTypes;
+  const sessionTypes = await request<ApiSessionType[]>("/session-types");
+  return sessionTypes.map(mapSessionTypeFromApi);
 }
 
-export async function getSessionType(sessionTypeId: string): Promise<SessionType | null> {
-  return mockSessionTypes.find((type) => type.id === sessionTypeId) ?? null;
+export async function getSessionType(
+  sessionTypeId: string
+): Promise<SessionType | null> {
+  const sessionTypes = await getSessionTypes();
+  return sessionTypes.find((type) => type.id === sessionTypeId) ?? null;
 }
 
-export async function createSession(input: CreateSessionInput): Promise<Session> {
-  const project = await getProject(input.projectId);
+export async function createSession(
+  input: CreateSessionInput
+): Promise<Session> {
+  const session = await request<ApiSession>(
+    `/projects/${input.projectId}/sessions`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    }
+  );
 
-  if (!project) {
-    throw new Error("Project not found");
-  }
-
-  const sessionType = await getSessionType(project.sessionTypeId);
-
-  if (!sessionType) {
-    throw new Error("Session type not found");
-  }
-
-  const activeJudge = sessionType.judges[0];
-
-  const session: Session = {
-    id: makeId("session"),
-    projectId: project.id,
-    state: "created",
-    durationSeconds: 300,
-    activeJudgeId: activeJudge.id,
-    transcript: [],
-  };
-
-  const sessions = getStoredSessions();
-  saveStoredSessions([session, ...sessions]);
-
-  return session;
+  return mapSessionFromApi(session);
 }
 
 export async function getSession(sessionId: string): Promise<Session | null> {
-  const sessions = getStoredSessions();
-  return sessions.find((session) => session.id === sessionId) ?? null;
+  try {
+    const session = await request<ApiSession>(`/sessions/${sessionId}`);
+    return mapSessionFromApi(session);
+  } catch (error) {
+    if (error instanceof Error && error.message.includes("Session not found")) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export async function startSession(sessionId: string): Promise<Session> {
-  const sessions = getStoredSessions();
-  const session = sessions.find((item) => item.id === sessionId);
+  const session = await request<ApiSession>(`/sessions/${sessionId}/start`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
 
-  if (!session) {
-    throw new Error("Session not found");
-  }
-
-  const updatedSession: Session = {
-    ...session,
-    state: "running",
-    startedAt: new Date().toISOString(),
-  };
-
-  saveStoredSessions(
-    sessions.map((item) => (item.id === sessionId ? updatedSession : item))
-  );
-
-  return updatedSession;
+  return mapSessionFromApi(session);
 }
 
 export async function endSession(
   sessionId: string,
   input: EndSessionInput
 ): Promise<Session> {
-  const sessions = getStoredSessions();
-  const session = sessions.find((item) => item.id === sessionId);
-
-  if (!session) {
-    throw new Error("Session not found");
-  }
-
-  const updatedSession: Session = {
-    ...session,
-    state: "ended",
-    transcript: input.transcript,
-    endedAt: new Date().toISOString(),
-  };
-
-  saveStoredSessions(
-    sessions.map((item) => (item.id === sessionId ? updatedSession : item))
-  );
-
-  // For MVP, mock generating feedback and updating project
-  await saveSessionFeedback(sessionId, mockFeedbackReport);
-  await updateProject(session.projectId, {
-    status: "ready",
-    lastVerdict: mockFeedbackReport.finalVerdict as any,
+  const session = await request<ApiSession>(`/sessions/${sessionId}/end`, {
+    method: "POST",
+    body: JSON.stringify({
+      transcript: input.transcript,
+    }),
   });
 
-  return updatedSession;
+  return mapSessionFromApi(session);
 }
 
 export async function getSessionFeedback(

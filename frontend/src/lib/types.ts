@@ -99,3 +99,64 @@ export type FeedbackReport = {
   suggestedStrongerAnswers: string[];
   transcript: string[];
 };
+
+// Backend API response contracts mirror the Python API's snake_case fields.
+
+export type ApiJudge = {
+  id: string;
+  name: string;
+  role_name: string;
+  personality: string;
+  description: string | null;
+  signature_pressure: string | null;
+  avatar_id: string | null;
+  voice_preset: string | null;
+  base_prompt: string | null;
+  is_active: boolean;
+};
+
+export type ApiSessionType = {
+  id: string;
+  name: string;
+  description: string | null;
+  default_duration_seconds: number;
+  rubric: Record<string, unknown> | null;
+  is_active: boolean;
+  judges: ApiJudge[];
+};
+
+export type ApiProject = {
+  id: string;
+  user_id: string;
+  title: string;
+  description: string | null;
+  session_type_id: string;
+  file_urls: string[];
+  pasted_texts: string[];
+  extracted_context: string[];
+  suggested_questions: string[];
+  status: "draft" | "ready" | "archived";
+  created_at: string;
+  updated_at: string;
+};
+
+export type ApiSession = {
+  id: string;
+  project_id: string;
+  user_id: string;
+  session_type_id: string;
+  active_judge_id: string | null;
+  state: SessionState;
+  duration_seconds: number;
+  runway_session_id: string | null;
+  runway_conversation_id: string | null;
+  transcript: string[];
+  feedback: string[];
+  scoring: Record<string, unknown> | null;
+  overall_score: number | null;
+  final_verdict: string | null;
+  started_at: string | null;
+  ended_at: string | null;
+  created_at: string;
+  updated_at: string;
+};

@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useParams } from "next/navigation";
 import Link from "next/link";
 import { AppShell } from "@/components/layout/AppShell";
 import { VerdictSummary } from "./VerdictSummary";
@@ -16,7 +16,6 @@ import type { Project, FeedbackReport } from "@/lib/types";
 
 export function FeedbackReportPage() {
   const params = useParams<{ sessionId: string }>();
-  const router = useRouter();
   
   const [project, setProject] = useState<Project | null>(null);
   const [report, setReport] = useState<FeedbackReport | null>(null);

@@ -1,4 +1,4 @@
-import type { Judge, SessionType, Project } from "./types";
+import type { FeedbackReport, Judge, Project, SessionType } from "./types";
 
 // ─── Judges ────────────────────────────────────────────────────────────────────
 
@@ -185,7 +185,7 @@ export const mockPressureQuestions: Record<string, string[]> = {
 
 // ─── Feedback Report ──────────────────────────────────────────────────────────
 
-export const mockFeedbackReport: any = {
+export const mockFeedbackReport: FeedbackReport = {
   finalVerdict: "Strong with gaps",
   overallScore: 78,
   scoring: {
