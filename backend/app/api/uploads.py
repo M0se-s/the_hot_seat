@@ -37,7 +37,9 @@ def _validate_filename(filename: str | None) -> str:
     lower = filename.lower()
 
     if not any(lower.endswith(ext) for ext in ALLOWED_EXTENSIONS):
-        raise HTTPException(status_code=400, detail="Only PDF and TXT files are supported")
+        raise HTTPException(
+            status_code=400, detail="Only PDF and TXT files are supported"
+        )
 
     return filename
 
@@ -57,7 +59,9 @@ async def upload_project_file(
     content_type = file.content_type or "application/octet-stream"
 
     if content_type not in ALLOWED_CONTENT_TYPES:
-        raise HTTPException(status_code=400, detail="Only PDF and TXT files are supported")
+        raise HTTPException(
+            status_code=400, detail="Only PDF and TXT files are supported"
+        )
 
     content = await file.read()
 

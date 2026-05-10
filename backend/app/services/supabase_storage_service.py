@@ -52,6 +52,8 @@ def upload_bytes_to_supabase(
     try:
         public_url = client.storage.from_(bucket_name).get_public_url(storage_path)
     except Exception as exc:
-        raise SupabaseStorageError(f"Could not create Supabase public URL: {exc}") from exc
+        raise SupabaseStorageError(
+            f"Could not create Supabase public URL: {exc}"
+        ) from exc
 
     return public_url
