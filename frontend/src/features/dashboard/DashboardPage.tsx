@@ -69,27 +69,6 @@ export function DashboardPage() {
         </div>
       </div>
 
-      {/* ── Status Row ──────────────────────────────────────────── */}
-      <div className="mb-6 flex flex-wrap items-center gap-2">
-        <Badge variant="neutral">Evidence mode: Source files</Badge>
-        <Badge variant={error ? "danger" : "success"}>
-          Backend: {error ? "Unavailable" : "Connected"}
-        </Badge>
-        <Badge variant="neutral">Runway: Not connected</Badge>
-        <Badge variant="neutral">Featherless: Ready</Badge>
-      </div>
-
-      {/* ── Backend error ────────────────────────────────────────── */}
-      {error && !isLoading && (
-        <Panel className="mb-6 border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/20">
-          <p className="text-sm font-medium text-red-700 dark:text-red-300">
-            Backend unavailable.
-          </p>
-          <p className="mt-1 text-xs text-red-600 dark:text-red-400">
-            Make sure FastAPI is running at http://localhost:8000. {error}
-          </p>
-        </Panel>
-      )}
 
       {/* ── Main Grid ───────────────────────────────────────────── */}
       <div className="grid gap-6 lg:grid-cols-3">

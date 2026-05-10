@@ -101,21 +101,35 @@ export const mockProjects: Project[] = [
     id: "project-hackathon-demo",
     title: "Hackathon Demo Project",
     description:
-      "Pressure-test The Hot Seat\u2019s Runway hackathon demo flow using the team\u2019s own project materials and implementation plan.",
+      "Pressure-test The Hot Seat's Runway hackathon demo flow using the team's own project materials and implementation plan.",
     sessionTypeId: "session-demo-panel",
     evidenceCount: 1,
-    pastedTexts: [],
-    fileUrls: [],
-    extractedContext: [],
-    suggestedQuestions: [
-      "What is the moment people will remember?",
-      "What makes this Runway-native instead of generic roleplay?",
-      "What claim is actually supported by the materials?"
+    pastedTexts: [
+      "The Hot Seat is a factual crisis rehearsal room for conversations you cannot afford to fumble.\n\nThe system lets users create a case file, add pasted source material or upload PDF/TXT documents, generate source-grounded context and pressure questions, enter a live Hot Seat session with a Runway Character judge, and receive a credibility report after the session.\n\nThe MVP uses one active Runway Character at a time. The full judge panel is visible in the interface, but the first judge in the selected session type becomes the live active judge. For the Demo Panel, Rowan Pierce is the active judge.\n\nThe system tracks the quality of answers through the transcript and source materials. It looks for evasions, unsupported claims, vague ownership, weak timelines, contradictions, and trust recovery moments.\n\nThe post-session credibility report is generated from the transcript and project materials. It includes a final verdict, trust score, judge scoring, strengths, weaknesses, weakest moment, best moment, and suggested stronger answers.\n\nThe MVP intentionally avoids fake evidence, fake companies, fake metrics, fictional incidents, and generated claims that are not grounded in the materials."
     ],
-    status: "draft",
+    fileUrls: [],
+    extractedContext: [
+      "The Hot Seat is a factual crisis rehearsal room — not generic roleplay or AI coaching.",
+      "Users create a case file, upload or paste source material, then enter a live session with a Runway Character judge.",
+      "The active judge for the Demo Panel is Rowan Pierce — Demo Judge.",
+      "The system tracks evasions, unsupported claims, vague ownership, weak timelines, and trust recovery moments.",
+      "The credibility report includes: final verdict, trust score, judge scoring, strengths, weaknesses, and stronger answer suggestions.",
+      "The MVP intentionally avoids fake evidence, fake metrics, and generated claims not grounded in the materials.",
+      "Source materials ground the entire session — answers not supported by the materials will be flagged."
+    ],
+    suggestedQuestions: [
+      "What is the moment people will remember from this demo?",
+      "What makes this Runway-native instead of generic roleplay?",
+      "What claim in your pitch is actually supported by the current materials?",
+      "Who is this painfully for — and how do you know it is not just founders?",
+      "What is not live yet in the demo, and why did you cut it?",
+      "If Runway fails mid-demo, what does the user experience?",
+      "What is the most at-risk claim you are making today?"
+    ],
+    status: "ready",
     lastVerdict: "Not tested yet",
     createdAt: "2026-05-08T12:00:00Z",
-    updatedAt: "2026-05-08T12:00:00Z",
+    updatedAt: "2026-05-10T12:00:00Z",
   },
   {
     id: "project-crisis-response",

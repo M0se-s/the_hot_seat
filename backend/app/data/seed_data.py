@@ -51,7 +51,7 @@ JUDGES = [
 
 SESSION_TYPES = [
     {
-        "id": "session-type-crisis-panel",
+        "id": "session-crisis-panel",
         "name": "Crisis Panel",
         "description": "For crisis responses, public apologies, incident explanations, outage responses, and product recall responses.",
         "default_duration_seconds": 300,
@@ -62,7 +62,7 @@ SESSION_TYPES = [
         ],
     },
     {
-        "id": "session-type-pitch-panel",
+        "id": "session-pitch-panel",
         "name": "Pitch Panel",
         "description": "For startup ideas, product pitches, business concepts, and investor-style pitch practice.",
         "default_duration_seconds": 300,
@@ -73,7 +73,7 @@ SESSION_TYPES = [
         ],
     },
     {
-        "id": "session-type-demo-panel",
+        "id": "session-demo-panel",
         "name": "Demo Panel",
         "description": "For hackathon demos, product walkthroughs, technical demos, and competition pitches.",
         "default_duration_seconds": 300,

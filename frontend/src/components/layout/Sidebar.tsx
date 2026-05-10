@@ -7,10 +7,7 @@ import { routes } from "@/lib/routes";
 import { productName } from "@/styles/design-tokens";
 
 const navItems = [
-  { label: "Dashboard", href: routes.dashboard, enabled: true },
-  { label: "Case Files", href: "#", enabled: false },
-  { label: "Sessions", href: "#", enabled: false },
-  { label: "Reports", href: "#", enabled: false },
+  { label: "Dashboard", href: routes.dashboard },
 ];
 
 export function Sidebar() {
@@ -29,22 +26,7 @@ export function Sidebar() {
       {/* Navigation */}
       <nav className="flex flex-1 flex-col gap-0.5 px-3 py-4">
         {navItems.map((item) => {
-          const isActive = item.enabled && pathname === item.href;
-
-          if (!item.enabled) {
-            return (
-              <span
-                key={item.label}
-                className="flex items-center justify-between rounded-md px-3 py-2 text-sm text-zinc-400 cursor-not-allowed select-none dark:text-zinc-600"
-              >
-                {item.label}
-                <span className="text-[10px] uppercase tracking-wider text-zinc-400 dark:text-zinc-700">
-                  Soon
-                </span>
-              </span>
-            );
-          }
-
+          const isActive = pathname === item.href;
           return (
             <Link
               key={item.label}
@@ -61,13 +43,6 @@ export function Sidebar() {
           );
         })}
       </nav>
-
-      {/* Footer */}
-      <div className="border-t border-zinc-200 px-5 py-3 dark:border-zinc-800">
-        <p className="text-[10px] uppercase tracking-widest text-zinc-400 dark:text-zinc-700">
-          Sprint 15 · Theme polish
-        </p>
-      </div>
     </aside>
   );
 }
