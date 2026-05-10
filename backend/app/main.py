@@ -10,6 +10,7 @@ from app.api import (
     runway,
     session_types,
     sessions,
+    uploads,
 )
 from app.config import settings
 
@@ -34,4 +35,5 @@ app.include_router(judges.router)
 app.include_router(session_types.router)
 app.include_router(projects.router)
 app.include_router(runway.router)
+app.include_router(uploads.router)
 app.include_router(sessions.router)
