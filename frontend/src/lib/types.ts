@@ -5,6 +5,7 @@ export type Judge = {
   personality: string;
   description: string;
   signaturePressure: string;
+  avatarId?: string | null;
   isActive?: boolean;
 };
 
@@ -119,6 +120,22 @@ export type ApiJudge = {
   voice_preset: string | null;
   base_prompt: string | null;
   is_active: boolean;
+};
+
+export type RunwayStartResponse = {
+  sessionId: string;
+  sessionKey?: string | null;
+  conversationId?: string | null;
+  state: string;
+  raw?: Record<string, unknown> | null;
+};
+
+export type ApiRunwayStartResponse = {
+  session_id: string;
+  session_key?: string | null;
+  conversation_id?: string | null;
+  state: string;
+  raw?: Record<string, unknown> | null;
 };
 
 export type ApiSessionType = {

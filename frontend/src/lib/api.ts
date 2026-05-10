@@ -1,5 +1,6 @@
 import {
   mapFeedbackReportFromApi,
+  mapRunwayStartFromApi,
   mapProjectFromApi,
   mapSessionFromApi,
   mapSessionTypeFromApi,
@@ -9,6 +10,7 @@ import { getStoredFeedback, saveStoredFeedback } from "@/lib/storage";
 
 import type {
   ApiFeedbackReport,
+  ApiRunwayStartResponse,
   ApiProject,
   ApiSession,
   ApiSessionType,
@@ -17,6 +19,7 @@ import type {
   EndSessionInput,
   FeedbackReport,
   Project,
+  RunwayStartResponse,
   Session,
   SessionType,
 } from "@/lib/types";
@@ -160,6 +163,27 @@ export async function analyzeSession(
   );
 
   return mapFeedbackReportFromApi(report);
+}
+
+export async function startRunwaySession(
+  sessionId: string,
+): Promise<RunwayStartResponse> {
+  const response = await request<ApiRunwayStartResponse>(
+    `/sessions/${sessionId}/runway/start`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+
+  return mapRunwayStartFromApi(response);
+}
+
+export async function endRunwaySession(sessionId: string): Promise<void> {
+  await request<{ status: string }>(`/sessions/${sessionId}/runway/end`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
 }
 
 export async function getSessionFeedback(

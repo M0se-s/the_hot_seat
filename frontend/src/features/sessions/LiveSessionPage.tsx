@@ -7,7 +7,7 @@ import { RunwayCharacterStage } from "./RunwayCharacterStage";
 import { HotSeatTimer } from "./HotSeatTimer";
 import { SessionControlBar } from "./SessionControlBar";
 import { ManualTranscriptPanel } from "./ManualTranscriptPanel";
-import { endSession, getProject, getSession, getSessionType, startSession } from "@/lib/api";
+import { endRunwaySession, endSession, getProject, getSession, getSessionType, startSession } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Panel } from "@/components/ui/Panel";
 import { Badge } from "@/components/ui/Badge";
@@ -19,7 +19,7 @@ type LiveSessionPageProps = {
 
 export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
   const router = useRouter();
-  
+
   const [session, setSession] = useState<Session | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [sessionType, setSessionType] = useState<SessionType | null>(null);
@@ -74,6 +74,11 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
     try {
       setIsEnding(true);
       setError(null);
+      try {
+        await endRunwaySession(session.id);
+      } catch {
+        // Keep the manual transcript fallback working even if Runway cleanup fails.
+      }
       await endSession(session.id, {
         transcript: transcriptText
           .split("\n")
@@ -103,7 +108,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
       </AppShell>
     );
   }
-  
+
   if (!session || !project || !sessionType) {
     return (
       <AppShell>
@@ -119,15 +124,12 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
     );
   }
 
-  const activeJudge =
-    sessionType.judges.find((judge) => judge.id === session.activeJudgeId) ??
-    sessionType.judges[0];
   const panelJudges = sessionType.judges.slice(1);
 
   return (
     <AppShell>
       <div className="mx-auto max-w-6xl space-y-6">
-        
+
         {/* Header */}
         <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
           <div>
@@ -143,10 +145,10 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
 
         {/* Main Layout */}
         <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
-          
+
           {/* Left Column: Stage & Transcript */}
           <div className="flex flex-col gap-6">
-            <RunwayCharacterStage activeJudge={activeJudge} />
+            <RunwayCharacterStage sessionId={sessionId} />
             {error && (
               <Panel className="border-red-900/40 bg-red-950/20">
                 <p className="text-sm text-red-300">
@@ -164,11 +166,11 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
             </div>
             <SessionControlBar onEndSession={handleEndSession} isEnding={isEnding} />
           </div>
-          
+
           {/* Right Column: Timer & Sidebar */}
           <div className="flex flex-col gap-6">
             <HotSeatTimer initialSeconds={300} />
-            
+
             {/* Listening Panel */}
             <Panel className="flex-1 bg-zinc-900/40">
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500">

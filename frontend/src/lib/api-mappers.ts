@@ -1,12 +1,14 @@
 import type {
   ApiFeedbackReport,
   ApiJudge,
+  ApiRunwayStartResponse,
   ApiProject,
   ApiSession,
   ApiSessionType,
   FeedbackReport,
   Judge,
   Project,
+  RunwayStartResponse,
   Session,
   SessionType,
 } from "@/lib/types";
@@ -19,6 +21,7 @@ export function mapJudgeFromApi(judge: ApiJudge): Judge {
     personality: judge.personality,
     description: judge.description ?? "",
     signaturePressure: judge.signature_pressure ?? "",
+    avatarId: judge.avatar_id,
     isActive: judge.is_active,
   };
 }
@@ -91,5 +94,17 @@ export function mapFeedbackReportFromApi(
     weakestMoment: report.weakest_moment ?? "",
     suggestedStrongerAnswers: report.suggested_stronger_answers ?? [],
     transcript: report.transcript ?? [],
+  };
+}
+
+export function mapRunwayStartFromApi(
+  response: ApiRunwayStartResponse,
+): RunwayStartResponse {
+  return {
+    sessionId: response.session_id,
+    sessionKey: response.session_key ?? null,
+    conversationId: response.conversation_id ?? null,
+    state: response.state,
+    raw: response.raw ?? null,
   };
 }
