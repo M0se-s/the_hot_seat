@@ -44,7 +44,7 @@ pip install -r requirements.txt
 Run the server:
 
 ```bash
-uvicorn app.main:app --reload
+omicron app.main:app --reload
 ```
 
 Open:
