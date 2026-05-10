@@ -1,4 +1,5 @@
 import {
+  mapFeedbackReportFromApi,
   mapProjectFromApi,
   mapSessionFromApi,
   mapSessionTypeFromApi,
@@ -7,6 +8,7 @@ import {
 import { getStoredFeedback, saveStoredFeedback } from "@/lib/storage";
 
 import type {
+  ApiFeedbackReport,
   ApiProject,
   ApiSession,
   ApiSessionType,
@@ -68,7 +70,7 @@ export async function getProject(projectId: string): Promise<Project | null> {
 }
 
 export async function createProject(
-  input: CreateProjectInput
+  input: CreateProjectInput,
 ): Promise<Project> {
   const project = await request<ApiProject>("/projects", {
     method: "POST",
@@ -90,21 +92,21 @@ export async function getSessionTypes(): Promise<SessionType[]> {
 }
 
 export async function getSessionType(
-  sessionTypeId: string
+  sessionTypeId: string,
 ): Promise<SessionType | null> {
   const sessionTypes = await getSessionTypes();
   return sessionTypes.find((type) => type.id === sessionTypeId) ?? null;
 }
 
 export async function createSession(
-  input: CreateSessionInput
+  input: CreateSessionInput,
 ): Promise<Session> {
   const session = await request<ApiSession>(
     `/projects/${input.projectId}/sessions`,
     {
       method: "POST",
       body: JSON.stringify({}),
-    }
+    },
   );
 
   return mapSessionFromApi(session);
@@ -134,7 +136,7 @@ export async function startSession(sessionId: string): Promise<Session> {
 
 export async function endSession(
   sessionId: string,
-  input: EndSessionInput
+  input: EndSessionInput,
 ): Promise<Session> {
   const session = await request<ApiSession>(`/sessions/${sessionId}/end`, {
     method: "POST",
@@ -146,15 +148,44 @@ export async function endSession(
   return mapSessionFromApi(session);
 }
 
+export async function analyzeSession(
+  sessionId: string,
+): Promise<FeedbackReport> {
+  const report = await request<ApiFeedbackReport>(
+    `/sessions/${sessionId}/analyze`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+
+  return mapFeedbackReportFromApi(report);
+}
+
 export async function getSessionFeedback(
-  sessionId: string
+  sessionId: string,
 ): Promise<FeedbackReport | null> {
-  return getStoredFeedback(sessionId);
+  try {
+    const report = await request<ApiFeedbackReport>(
+      `/sessions/${sessionId}/feedback`,
+    );
+
+    return mapFeedbackReportFromApi(report);
+  } catch (error) {
+    if (
+      error instanceof Error &&
+      error.message.includes("Feedback has not been generated")
+    ) {
+      return null;
+    }
+
+    throw error;
+  }
 }
 
 export async function saveSessionFeedback(
   sessionId: string,
-  feedback: FeedbackReport
+  feedback: FeedbackReport,
 ): Promise<FeedbackReport> {
   saveStoredFeedback(sessionId, feedback);
   return feedback;

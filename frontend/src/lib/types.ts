@@ -89,7 +89,13 @@ export type FeedbackReport = {
   finalVerdict: string;
   overallScore: number;
   scoring: {
-    judges: JudgeScore[];
+    judges: {
+      judgeName: string;
+      category: string;
+      score: number;
+      label: string;
+      notes: string;
+    }[];
   };
   feedback: string[];
   strengths: string[];
@@ -159,4 +165,25 @@ export type ApiSession = {
   ended_at: string | null;
   created_at: string;
   updated_at: string;
+};
+
+export type ApiFeedbackReport = {
+  final_verdict: string;
+  overall_score: number;
+  scoring: {
+    judges: {
+      judge_name: string;
+      category: string;
+      score: number;
+      label: string;
+      notes: string;
+    }[];
+  };
+  feedback: string[];
+  strengths: string[];
+  weaknesses: string[];
+  best_moment: string;
+  weakest_moment: string;
+  suggested_stronger_answers: string[];
+  transcript: string[];
 };

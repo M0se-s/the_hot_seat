@@ -1,8 +1,10 @@
 import type {
+  ApiFeedbackReport,
   ApiJudge,
   ApiProject,
   ApiSession,
   ApiSessionType,
+  FeedbackReport,
   Judge,
   Project,
   Session,
@@ -21,7 +23,9 @@ export function mapJudgeFromApi(judge: ApiJudge): Judge {
   };
 }
 
-export function mapSessionTypeFromApi(sessionType: ApiSessionType): SessionType {
+export function mapSessionTypeFromApi(
+  sessionType: ApiSessionType,
+): SessionType {
   return {
     id: sessionType.id,
     name: sessionType.name,
@@ -43,7 +47,8 @@ export function mapProjectFromApi(project: ApiProject): Project {
     extractedContext: project.extracted_context ?? [],
     suggestedQuestions: project.suggested_questions ?? [],
     evidenceCount:
-      (project.file_urls?.length ?? 0) + (project.pasted_texts?.filter(Boolean).length ?? 0),
+      (project.file_urls?.length ?? 0) +
+      (project.pasted_texts?.filter(Boolean).length ?? 0),
     status: project.status,
     lastVerdict: "Not tested yet",
     updatedAt: project.updated_at,
@@ -60,5 +65,31 @@ export function mapSessionFromApi(session: ApiSession): Session {
     transcript: session.transcript ?? [],
     startedAt: session.started_at ?? undefined,
     endedAt: session.ended_at ?? undefined,
+  };
+}
+
+export function mapFeedbackReportFromApi(
+  report: ApiFeedbackReport,
+): FeedbackReport {
+  return {
+    finalVerdict: report.final_verdict,
+    overallScore: report.overall_score,
+    scoring: {
+      judges:
+        report.scoring?.judges?.map((judge) => ({
+          judgeName: judge.judge_name,
+          category: judge.category,
+          score: judge.score,
+          label: judge.label,
+          notes: judge.notes,
+        })) ?? [],
+    },
+    feedback: report.feedback ?? [],
+    strengths: report.strengths ?? [],
+    weaknesses: report.weaknesses ?? [],
+    bestMoment: report.best_moment ?? "",
+    weakestMoment: report.weakest_moment ?? "",
+    suggestedStrongerAnswers: report.suggested_stronger_answers ?? [],
+    transcript: report.transcript ?? [],
   };
 }

@@ -8,7 +8,7 @@ import { JudgeScorePanel } from "./JudgeScorePanel";
 import { TranscriptPanel } from "./TranscriptPanel";
 import { StrongerAnswerPanel } from "./StrongerAnswerPanel";
 import { TrustRiskPanel } from "./TrustRiskPanel";
-import { getProject, getSession, getSessionFeedback } from "@/lib/api";
+import { analyzeSession, getProject, getSession, getSessionFeedback } from "@/lib/api";
 import { routes } from "@/lib/routes";
 import { Button } from "@/components/ui/Button";
 import type { FeedbackReport, Project, Session } from "@/lib/types";
@@ -16,13 +16,16 @@ import type { FeedbackReport, Project, Session } from "@/lib/types";
 type FeedbackReportPageProps = {
   sessionId: string;
 };
-  
+
 export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
   const [session, setSession] = useState<Session | null>(null);
   const [project, setProject] = useState<Project | null>(null);
   const [report, setReport] = useState<FeedbackReport | null>(null);
   const [loaded, setLoaded] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  const [analyzing, setAnalyzing] = useState(false);
+  const [analyzeError, setAnalyzeError] = useState<string | null>(null);
 
   useEffect(() => {
     async function load() {
@@ -51,6 +54,19 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
     load();
   }, [sessionId]);
 
+  async function handleAnalyze() {
+    try {
+      setAnalyzing(true);
+      setAnalyzeError(null);
+      const generated = await analyzeSession(sessionId);
+      setReport(generated);
+    } catch (err) {
+      setAnalyzeError("Feedback generation failed. The transcript is still saved.");
+    } finally {
+      setAnalyzing(false);
+    }
+  }
+
   if (!loaded) {
     return (
       <AppShell>
@@ -63,7 +79,7 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
       </AppShell>
     );
   }
-  
+
   if (!session || !project) {
     return (
       <AppShell>
@@ -84,28 +100,42 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
       <AppShell>
         <div className="mx-auto max-w-4xl space-y-6 py-20">
           <div className="text-center">
-            <h2 className="text-lg font-semibold text-zinc-200">
-              Feedback generation is not connected yet.
-            </h2>
-            <p className="mt-2 text-sm text-zinc-500">
-              Sprint 11 will analyze this transcript with Featherless.
-            </p>
-            <div className="mt-6">
-              <Link href={routes.project(project.id)}>
-                <Button variant="secondary" size="sm">
-                  Back to Case File
-                </Button>
-              </Link>
-            </div>
+            {analyzing ? (
+              <>
+                <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-2 border-red-500 border-t-transparent" />
+                <p className="mt-2 text-sm text-zinc-500">
+                  Analyzing transcript against project materials...
+                </p>
+              </>
+            ) : (
+              <>
+                <h2 className="text-lg font-semibold text-zinc-200">
+                  Ready for Review
+                </h2>
+                {analyzeError && (
+                  <p className="mt-2 text-sm text-red-500">{analyzeError}</p>
+                )}
+                <div className="mt-6 flex justify-center gap-4">
+                  <Button onClick={handleAnalyze}>
+                    Generate credibility report
+                  </Button>
+                  <Link href={routes.project(project.id)}>
+                    <Button variant="secondary">Back to Case File</Button>
+                  </Link>
+                </div>
+              </>
+            )}
           </div>
 
-          <TranscriptPanel
-            transcript={
-              session.transcript.length > 0
-                ? session.transcript.join("\n\n")
-                : "No transcript was saved for this session."
-            }
-          />
+          {!analyzing && (
+            <TranscriptPanel
+              transcript={
+                session.transcript.length > 0
+                  ? session.transcript.join("\n\n")
+                  : "No transcript was saved for this session."
+              }
+            />
+          )}
         </div>
       </AppShell>
     );
@@ -136,7 +166,7 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
   return (
     <AppShell>
       <div className="mx-auto max-w-5xl space-y-8">
-        
+
         {/* Header */}
         <div className="flex items-start justify-between border-b border-zinc-800 pb-6">
           <div>
@@ -146,9 +176,6 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
             <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
               {project.title}
             </h1>
-            <p className="mt-2 text-sm text-zinc-500">
-              Mock feedback data based on The Hot Seat demo pitch.
-            </p>
           </div>
           <Link href={routes.dashboard}>
             <Button variant="secondary" size="sm">
@@ -159,13 +186,13 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
 
         {/* Top Section: Verdict & Scores */}
         <div className="space-y-6">
-          <VerdictSummary 
+          <VerdictSummary
             verdict={report.finalVerdict}
             score={report.overallScore}
             worstDodge={report.weakestMoment}
             bestRecovery={report.bestMoment}
           />
-          
+
           <JudgeScorePanel scores={report.scoring.judges.map(j => ({
             judgeId: j.judgeName,
             name: j.judgeName,
@@ -176,20 +203,43 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
           }))} />
         </div>
 
-        {/* Middle Section: Coach-cut Analysis */}
+        {/* Middle Section: Strengths & Weaknesses using existing or standard panels */}
         <div className="grid gap-6 md:grid-cols-2">
-          <TrustRiskPanel 
-            unsupportedClaim={report.feedback[1] ?? ""}
-            trustLoss={report.feedback[0] ?? ""}
-          />
-          <StrongerAnswerPanel 
-            weakestAnswer={report.weaknesses[0] ?? ""}
-            strongerAnswer={report.suggestedStrongerAnswers[0] ?? ""}
-          />
+          {/* Strengths */}
+          <div className="space-y-4 rounded-xl border border-red-900/20 bg-red-950/10 p-6">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-red-400">
+              Strengths
+            </h3>
+            <ul className="list-inside list-disc space-y-2 text-sm text-zinc-300">
+              {report.strengths.map((str, i) => (
+                <li key={i}>{str}</li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Weaknesses */}
+          <div className="space-y-4 rounded-xl border border-red-900/20 bg-red-950/10 p-6">
+            <h3 className="text-sm font-semibold uppercase tracking-wider text-red-400">
+              Weaknesses
+            </h3>
+            <ul className="list-inside list-disc space-y-2 text-sm text-zinc-300">
+              {report.weaknesses.map((wk, i) => (
+                <li key={i}>{wk}</li>
+              ))}
+            </ul>
+          </div>
         </div>
 
-        {/* Bottom Section: Transcript */}
-        <TranscriptPanel transcript={report.transcript.join("\n\n")} />
+        <StrongerAnswerPanel
+          weakestAnswer={report.weaknesses[0] ?? report.weakestMoment}
+          strongerAnswer={report.suggestedStrongerAnswers.join("\n\n")}
+        />
+
+        {/* Bottom Section: Transcript reviewed */}
+        <div className="space-y-4">
+          <h3 className="text-lg font-semibold text-zinc-200">Transcript reviewed</h3>
+          <TranscriptPanel transcript={report.transcript.join("\n\n")} />
+        </div>
 
       </div>
     </AppShell>
