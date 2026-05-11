@@ -27,6 +27,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
   const [loaded, setLoaded] = useState(false);
   const [isEnding, setIsEnding] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [runwayConnected, setRunwayConnected] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -150,7 +151,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
 
           {/* Left Column: Stage & Transcript */}
           <div className="flex flex-col gap-6">
-            <RunwayCharacterStage sessionId={sessionId} />
+            <RunwayCharacterStage sessionId={sessionId} onConnected={() => setRunwayConnected(true)} onTranscriptChange={setTranscriptText} />
 
             {error && (
               <Panel className="border-red-200 bg-red-50 dark:border-red-900/40 dark:bg-red-950/20">
@@ -174,7 +175,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
 
           {/* Right Column: Timer & Sidebar */}
           <div className="flex flex-col gap-6">
-            <HotSeatTimer initialSeconds={300} />
+            <HotSeatTimer initialSeconds={300} started={runwayConnected} />
 
             {/* Listening Panel */}
             <Panel>

@@ -6,33 +6,34 @@ import { Panel } from "@/components/ui/Panel";
 
 interface HotSeatTimerProps {
   initialSeconds?: number;
+  /** Timer only counts down when this is true (Runway character connected). */
+  started?: boolean;
 }
 
-export function HotSeatTimer({ initialSeconds = 300 }: HotSeatTimerProps) {
+export function HotSeatTimer({ initialSeconds = 300, started = false }: HotSeatTimerProps) {
   const [timeLeft, setTimeLeft] = useState(initialSeconds);
-  const [isRunning] = useState(true);
 
   useEffect(() => {
-    if (!isRunning || timeLeft <= 0) return;
-    
+    if (!started || timeLeft <= 0) return;
+
     const interval = setInterval(() => {
       setTimeLeft((prev) => Math.max(0, prev - 1));
     }, 1000);
-    
+
     return () => clearInterval(interval);
-  }, [isRunning, timeLeft]);
+  }, [started, timeLeft]);
 
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
-  
+
   const isWarning = timeLeft <= 60 && timeLeft > 10;
   const isCritical = timeLeft <= 10;
 
   return (
     <Panel className={cn(
       "flex flex-col items-center justify-center p-6 transition-colors duration-500",
-      isCritical ? "border-red-500/50 bg-red-950/20" : 
-      isWarning ? "border-amber-500/30 bg-amber-950/20" : 
+      isCritical ? "border-red-500/50 bg-red-950/20" :
+      isWarning ? "border-amber-500/30 bg-amber-950/20" :
       "border-zinc-800 bg-zinc-900/50"
     )}>
       <span className={cn(
@@ -49,6 +50,11 @@ export function HotSeatTimer({ initialSeconds = 300 }: HotSeatTimerProps) {
       )}>
         {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
       </div>
+      {!started && (
+        <p className="mt-3 text-[10px] uppercase tracking-widest text-zinc-600">
+          Waiting for character…
+        </p>
+      )}
     </Panel>
   );
 }

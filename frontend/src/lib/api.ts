@@ -1,18 +1,8 @@
 /**
  * api.ts — Frontend API layer
  *
- * Two-tier strategy for the current build phase:
- *
- * TIER 1 — Backend routes that exist (Sprint 8):
- *   GET /health, /judges, /session-types, /demo-user
- *   These hit the real FastAPI server.
- *
- * TIER 2 — Backend routes not yet implemented:
- *   /projects, /sessions, /sessions/:id/analyze, /sessions/:id/runway/*
- *   These use localStorage via storage.ts until Sprint 9+ backend routes land.
- *   Replacing them later is a one-file change in this file only.
- *
- * Pages never know which tier they're on — they just call these functions.
+ * All routes hit the real FastAPI backend. There is no local-storage
+ * fallback or mock data for any entity.
  */
 
 import {
@@ -22,22 +12,14 @@ import {
   mapRunwayStartFromApi,
   mapSessionTypeFromApi,
   mapUploadResponseFromApi,
+  mapProjectFromApi,
+  mapSessionFromApi,
 } from "@/lib/api-mappers";
 
 import {
-  getStoredProjects,
-  saveStoredProjects,
-  getStoredSessions,
-  saveStoredSessions,
   getStoredFeedback,
   saveStoredFeedback,
 } from "@/lib/storage";
-
-import {
-  mockFeedbackReport,
-  mockPressureQuestions,
-  mockSessionTypes,
-} from "@/lib/mock-data";
 
 import type {
   ApiFeedbackReport,
@@ -46,6 +28,8 @@ import type {
   ApiProjectQuestionsGeneration,
   ApiSessionType,
   ApiUploadResponse,
+  ApiProject,
+  ApiSession,
   CreateProjectInput,
   CreateSessionInput,
   EndSessionInput,
@@ -89,10 +73,6 @@ async function request<T>(path: string, options?: RequestInit): Promise<T> {
   return response.json() as Promise<T>;
 }
 
-function makeId(prefix: string) {
-  return `${prefix}-${Math.random().toString(36).slice(2, 10)}`;
-}
-
 // ─── TIER 1: Session types — from real backend ────────────────────────────────
 
 export async function getSessionTypes(): Promise<SessionType[]> {
@@ -103,148 +83,105 @@ export async function getSessionTypes(): Promise<SessionType[]> {
 export async function getSessionType(
   sessionTypeId: string,
 ): Promise<SessionType | null> {
-  try {
-    const sessionTypes = await getSessionTypes();
-    const found = sessionTypes.find((type) => type.id === sessionTypeId);
-    if (found) return found;
-  } catch {
-    // Backend fetch failed, fall through to mock data
-  }
-
-  // Fallback: Try to find in mock session types (for demo/development)
-  const found = mockSessionTypes.find((type) => type.id === sessionTypeId);
-  return found ?? null;
+  const sessionTypes = await getSessionTypes();
+  return sessionTypes.find((type) => type.id === sessionTypeId) ?? null;
 }
 
-// ─── TIER 2: Projects — localStorage until backend route exists ───────────────
+// ─── TIER 1: Projects — real backend routes ───────────────────────────────────
 
 export async function getProjects(): Promise<Project[]> {
-  return getStoredProjects();
+  const projects = await request<ApiProject[]>("/projects");
+  return projects.map(mapProjectFromApi);
 }
 
 export async function getProject(projectId: string): Promise<Project | null> {
-  const projects = getStoredProjects();
-  return projects.find((p) => p.id === projectId) ?? null;
+  try {
+    const project = await request<ApiProject>(`/projects/${projectId}`);
+    return mapProjectFromApi(project);
+  } catch {
+    return null;
+  }
 }
 
 export async function createProject(
   input: CreateProjectInput,
 ): Promise<Project> {
-  const projects = getStoredProjects();
-
-  const project: Project = {
-    id: makeId("project"),
+  const payload = {
     title: input.title,
     description: input.description,
-    sessionTypeId: input.sessionTypeId,
-    pastedTexts: input.pastedTexts,
-    fileUrls: input.fileUrls ?? [],
-    extractedContext: [],
-    suggestedQuestions: mockPressureQuestions[input.sessionTypeId] ?? [],
-    evidenceCount:
-      input.pastedTexts.filter(Boolean).length + (input.fileUrls?.length ?? 0),
-    status: "draft",
-    lastVerdict: "Not tested yet",
-    updatedAt: new Date().toISOString(),
+    session_type_id: input.sessionTypeId,
+    pasted_texts: input.pastedTexts,
+    file_urls: input.fileUrls ?? [],
   };
-
-  saveStoredProjects([project, ...projects]);
-  return project;
+  const response = await request<ApiProject>("/projects", {
+    method: "POST",
+    body: JSON.stringify(payload),
+  });
+  return mapProjectFromApi(response);
 }
 
 export async function updateProject(
   projectId: string,
   patch: Partial<Project>,
 ): Promise<Project> {
-  const projects = getStoredProjects();
-  const updated = projects.map((p) =>
-    p.id === projectId
-      ? { ...p, ...patch, updatedAt: new Date().toISOString() }
-      : p,
-  );
-  saveStoredProjects(updated);
-  const found = updated.find((p) => p.id === projectId);
-  if (!found) throw new Error("Project not found");
-  return found;
+  const payload: Record<string, unknown> = {};
+  if (patch.title !== undefined) payload.title = patch.title;
+  if (patch.description !== undefined) payload.description = patch.description;
+  if (patch.sessionTypeId !== undefined) payload.session_type_id = patch.sessionTypeId;
+  if (patch.status !== undefined) payload.status = patch.status;
+  if (patch.pastedTexts !== undefined) payload.pasted_texts = patch.pastedTexts;
+  if (patch.fileUrls !== undefined) payload.file_urls = patch.fileUrls;
+  if (patch.extractedContext !== undefined) payload.extracted_context = patch.extractedContext;
+  if (patch.suggestedQuestions !== undefined) payload.suggested_questions = patch.suggestedQuestions;
+
+  const response = await request<ApiProject>(`/projects/${projectId}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+  return mapProjectFromApi(response);
 }
 
-// ─── TIER 2: Sessions — localStorage until backend route exists ───────────────
+// ─── TIER 1: Sessions — real backend routes ───────────────────────────────────
 
 export async function createSession(
   input: CreateSessionInput,
 ): Promise<Session> {
-  const sessions = getStoredSessions();
-
-  const session: Session = {
-    id: makeId("session"),
-    projectId: input.projectId,
-    state: "created",
-    durationSeconds: 300,
-    activeJudgeId: "",
-    transcript: [],
-    startedAt: undefined,
-    endedAt: undefined,
-  };
-
-  saveStoredSessions([session, ...sessions]);
-  return session;
+  const response = await request<ApiSession>(`/projects/${input.projectId}/sessions`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+  return mapSessionFromApi(response);
 }
 
 export async function getSession(sessionId: string): Promise<Session | null> {
-  const sessions = getStoredSessions();
-  return sessions.find((s) => s.id === sessionId) ?? null;
+  try {
+    const session = await request<ApiSession>(`/sessions/${sessionId}`);
+    return mapSessionFromApi(session);
+  } catch {
+    return null;
+  }
 }
 
 export async function startSession(sessionId: string): Promise<Session> {
-  const sessions = getStoredSessions();
-  const session = sessions.find((s) => s.id === sessionId);
-  if (!session) throw new Error("Session not found");
-
-  const updated: Session = {
-    ...session,
-    state: "running",
-    startedAt: new Date().toISOString(),
-  };
-
-  saveStoredSessions(sessions.map((s) => (s.id === sessionId ? updated : s)));
-  return updated;
+  const response = await request<ApiSession>(`/sessions/${sessionId}/start`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+  return mapSessionFromApi(response);
 }
 
 export async function endSession(
   sessionId: string,
   input: EndSessionInput,
 ): Promise<Session> {
-  const sessions = getStoredSessions();
-  const session = sessions.find((s) => s.id === sessionId);
-  if (!session) throw new Error("Session not found");
-
-  const updated: Session = {
-    ...session,
-    state: "ended",
-    transcript: input.transcript,
-    endedAt: new Date().toISOString(),
-  };
-
-  saveStoredSessions(sessions.map((s) => (s.id === sessionId ? updated : s)));
-
-  // Persist mock feedback so the report page has data immediately
-  saveStoredFeedback(sessionId, mockFeedbackReport);
-
-  // Update project status
-  await updateProject(session.projectId, {
-    status: "ready",
-    lastVerdict: mockFeedbackReport.finalVerdict as
-      | "Not tested yet"
-      | "Not ready"
-      | "Promising but weak"
-      | "Strong with gaps"
-      | "Demo-ready",
+  const response = await request<ApiSession>(`/sessions/${sessionId}/end`, {
+    method: "POST",
+    body: JSON.stringify({ transcript: input.transcript }),
   });
-
-  return updated;
+  return mapSessionFromApi(response);
 }
 
-// ─── TIER 2: Feedback — localStorage until Featherless route exists ───────────
+// ─── TIER 1: Feedback — real Featherless route via backend ────────────────────
 
 export async function getSessionFeedback(
   sessionId: string,
@@ -252,52 +189,26 @@ export async function getSessionFeedback(
   return getStoredFeedback(sessionId);
 }
 
-export async function saveSessionFeedbackLocal(
-  sessionId: string,
-  feedback: FeedbackReport,
-): Promise<FeedbackReport> {
-  saveStoredFeedback(sessionId, feedback);
-  return feedback;
-}
-
 export async function analyzeSession(
   sessionId: string,
 ): Promise<FeedbackReport> {
-  try {
-    const report = await request<ApiFeedbackReport>(
-      `/sessions/${sessionId}/analyze`,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
-      },
-    );
-    const mapped = mapFeedbackReportFromApi(report);
-    saveStoredFeedback(sessionId, mapped);
-    return mapped;
-  } catch {
-    // Featherless fallback — return saved mock report
-    const saved = getStoredFeedback(sessionId);
-    if (saved) return saved;
-    saveStoredFeedback(sessionId, mockFeedbackReport);
-    return mockFeedbackReport;
-  }
+  const report = await request<ApiFeedbackReport>(
+    `/sessions/${sessionId}/analyze`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+  const mapped = mapFeedbackReportFromApi(report);
+  saveStoredFeedback(sessionId, mapped);
+  return mapped;
 }
 
-// ─── TIER 1+2: Runway — real backend, Runway SDK ─────────────────────────────
+// ─── TIER 1: Runway — real backend, Runway SDK ───────────────────────────────
 
 export async function startRunwaySession(
   sessionId: string,
 ): Promise<RunwayStartResponse> {
-  if (sessionId.startsWith("session-")) {
-    return {
-      sessionId,
-      sessionKey: null,
-      conversationId: sessionId,
-      state: "running",
-      raw: {},
-    };
-  }
-
   const response = await request<ApiRunwayStartResponse>(
     `/sessions/${sessionId}/runway/start`,
     {
@@ -309,17 +220,13 @@ export async function startRunwaySession(
 }
 
 export async function endRunwaySession(sessionId: string): Promise<void> {
-  if (sessionId.startsWith("session-")) {
-    return;
-  }
-
   try {
     await request<{ status: string }>(`/sessions/${sessionId}/runway/end`, {
       method: "POST",
       body: JSON.stringify({}),
     });
   } catch {
-    // Runway cleanup failure is non-fatal — manual transcript mode continues.
+    // Runway cleanup failure is non-fatal — session end still proceeds.
   }
 }
 
@@ -357,60 +264,44 @@ export async function uploadProjectFile(
   return mapUploadResponseFromApi(result);
 }
 
-// ─── TIER 2: Context & question generation — real Featherless via backend ─────
+// ─── TIER 1: Context & question generation — real Featherless via backend ─────
 
 export async function generateProjectContext(
   projectId: string,
 ): Promise<ProjectContextGeneration> {
-  try {
-    const response = await request<ApiProjectContextGeneration>(
-      `/projects/${projectId}/generate-context`,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
-      },
-    );
-    const mapped = mapProjectContextGenerationFromApi(response);
+  const response = await request<ApiProjectContextGeneration>(
+    `/projects/${projectId}/generate-context`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+  const mapped = mapProjectContextGenerationFromApi(response);
 
-    // Persist generated context locally
-    await updateProject(projectId, {
-      extractedContext: mapped.extractedContext,
-    });
+  // Persist generated context to backend
+  await updateProject(projectId, {
+    extractedContext: mapped.extractedContext,
+  });
 
-    return mapped;
-  } catch (err) {
-    throw new Error(
-      err instanceof Error
-        ? err.message
-        : "Context generation failed. Check that source material has been added.",
-    );
-  }
+  return mapped;
 }
 
 export async function generateProjectQuestions(
   projectId: string,
 ): Promise<ProjectQuestionsGeneration> {
-  try {
-    const response = await request<ApiProjectQuestionsGeneration>(
-      `/projects/${projectId}/generate-questions`,
-      {
-        method: "POST",
-        body: JSON.stringify({}),
-      },
-    );
-    const mapped = mapProjectQuestionsGenerationFromApi(response);
+  const response = await request<ApiProjectQuestionsGeneration>(
+    `/projects/${projectId}/generate-questions`,
+    {
+      method: "POST",
+      body: JSON.stringify({}),
+    },
+  );
+  const mapped = mapProjectQuestionsGenerationFromApi(response);
 
-    // Persist generated questions locally
-    await updateProject(projectId, {
-      suggestedQuestions: mapped.suggestedQuestions,
-    });
+  // Persist generated questions to backend
+  await updateProject(projectId, {
+    suggestedQuestions: mapped.suggestedQuestions,
+  });
 
-    return mapped;
-  } catch (err) {
-    throw new Error(
-      err instanceof Error
-        ? err.message
-        : "Question generation failed. Check that source material has been added.",
-    );
-  }
+  return mapped;
 }

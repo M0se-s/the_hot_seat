@@ -20,6 +20,9 @@ class Settings(BaseSettings):
     max_dev_session_seconds: int = 60
     allow_long_test_sessions: bool = False
     runway_default_avatar_id: str | None = None
+    runway_nova_avatar_id: str | None = None
+    runway_mara_avatar_id: str | None = None
+    runway_rowan_avatar_id: str | None = None
 
     model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 

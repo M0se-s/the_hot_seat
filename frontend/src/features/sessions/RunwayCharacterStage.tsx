@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { AvatarSession, AvatarVideo, ControlBar } from "@runwayml/avatars-react";
+import { AvatarSession, AvatarVideo, ControlBar, useTranscript } from "@runwayml/avatars-react";
 
 import { Badge } from "@/components/ui/Badge";
 import { Panel } from "@/components/ui/Panel";
@@ -10,11 +10,15 @@ import type { Project, RunwayStartResponse, Session, SessionType } from "@/lib/t
 
 type RunwayCharacterStageProps = {
     sessionId: string;
+    /** Called once the Runway character is connected and credentials are live. */
+    onConnected?: () => void;
+    /** Called when the Runway SDK updates the real-time transcript. */
+    onTranscriptChange?: (text: string) => void;
 };
 
 type StageStatus = "loading" | "disconnected" | "connecting" | "connected" | "error";
 
-export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
+export function RunwayCharacterStage({ sessionId, onConnected, onTranscriptChange }: RunwayCharacterStageProps) {
     const [session, setSession] = useState<Session | null>(null);
     const [project, setProject] = useState<Project | null>(null);
     const [sessionType, setSessionType] = useState<SessionType | null>(null);
@@ -115,6 +119,7 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
 
             const response = await startRunwaySession(sessionId);
             setRunwaySession(response);
+            onConnected?.();
         } catch (connectError) {
             setError(
                 connectError instanceof Error
@@ -223,6 +228,7 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
                         <div className="space-y-4">
                             <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950">
                                 <AvatarVideo className="h-90 w-full" />
+                                {onTranscriptChange && <RunwayTranscriptListener onTranscriptChange={onTranscriptChange} />}
                             </div>
 
                             <div className="flex justify-end">
@@ -242,3 +248,20 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
         </Panel>
     );
 }
+
+function RunwayTranscriptListener({ onTranscriptChange }: { onTranscriptChange: (text: string) => void }) {
+    const transcript = useTranscript({ interim: true });
+
+    useEffect(() => {
+        if (!transcript || transcript.length === 0) return;
+        
+        const lines = transcript.map(entry => {
+            const speaker = entry.participantIdentity === 'user' ? 'You' : 'Judge';
+            return `${speaker}: ${entry.text}`;
+        });
+        
+        onTranscriptChange(lines.join('\n'));
+    }, [transcript, onTranscriptChange]);
+
+    return null;
+}
