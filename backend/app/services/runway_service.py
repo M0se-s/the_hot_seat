@@ -116,8 +116,27 @@ def build_runway_prompt(db: Session, session: HotSeatSession) -> tuple[str, str]
         [text.strip() for text in project.pasted_texts if text and text.strip()]
     )
 
+    # Truncate inputs to keep the total prompt under the 10k character limit.
+    # We allocate roughly: 3k materials, 3k context, 2k questions, leaving 2k for template/personality.
+    if len(project_materials) > 3000:
+        project_materials = project_materials[:3000] + "... [truncated]"
+
     if not project_materials:
         project_materials = "No pasted project materials were provided."
+
+    extracted_context_str = _join_list(
+        project.extracted_context,
+        "No extracted context has been generated yet.",
+    )
+    if len(extracted_context_str) > 3000:
+        extracted_context_str = extracted_context_str[:3000] + "... [truncated]"
+
+    suggested_questions_str = _join_list(
+        project.suggested_questions,
+        "No suggested pressure questions have been generated yet.",
+    )
+    if len(suggested_questions_str) > 2000:
+        suggested_questions_str = suggested_questions_str[:2000] + "... [truncated]"
 
     prompt = RUNWAY_JUDGE_PROMPT_TEMPLATE.format(
         judge_name=active_judge.name,
@@ -127,15 +146,13 @@ def build_runway_prompt(db: Session, session: HotSeatSession) -> tuple[str, str]
         project_title=project.title,
         project_description=project.description or "No description provided.",
         project_materials=project_materials,
-        extracted_context=_join_list(
-            project.extracted_context,
-            "No extracted context has been generated yet.",
-        ),
-        suggested_questions=_join_list(
-            project.suggested_questions,
-            "No suggested pressure questions have been generated yet.",
-        ),
+        extracted_context=extracted_context_str,
+        suggested_questions=suggested_questions_str,
     )
+
+    # Final safety truncation to ensure Runway's 10,000 char limit is never hit.
+    if len(prompt) > 9500:
+        prompt = prompt[:9500] + "\n\n[PROMPT TRUNCATED DUE TO SIZE LIMITS]"
 
     return active_judge.avatar_id, prompt
 

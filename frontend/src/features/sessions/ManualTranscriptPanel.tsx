@@ -25,7 +25,7 @@ export function ManualTranscriptPanel({
   }
 
   return (
-    <Panel className="flex h-full min-h-75 flex-col p-0! overflow-hidden">
+    <Panel className="flex min-h-[400px] flex-col p-0!">
       <div className="border-b border-zinc-800 bg-zinc-900/80 px-4 py-3">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
           Manual Transcript Fallback

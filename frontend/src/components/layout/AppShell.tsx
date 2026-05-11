@@ -11,9 +11,11 @@ export function AppShell({ children }: AppShellProps) {
     <div className="min-h-screen bg-zinc-50 text-zinc-950 dark:bg-zinc-950 dark:text-zinc-100" suppressHydrationWarning>
       <div className="flex min-h-screen">
         <Sidebar />
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="flex flex-1 flex-col">
           <TopBar />
-          <main className="flex-1 px-6 py-6 lg:px-8">{children}</main>
+          <main className="flex-1">
+            {children}
+          </main>
         </div>
       </div>
     </div>
