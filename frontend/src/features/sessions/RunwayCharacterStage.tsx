@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, useRef } from "react";
 import { AvatarSession, AvatarVideo, ControlBar, useTranscript } from "@runwayml/avatars-react";
 
 import { Badge } from "@/components/ui/Badge";
@@ -26,6 +26,7 @@ export function RunwayCharacterStage({ sessionId, onConnected, onTranscriptChang
     const [isConnecting, setIsConnecting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const hasStartedRef = useRef(false);
 
     useEffect(() => {
         async function load() {
@@ -109,9 +110,11 @@ export function RunwayCharacterStage({ sessionId, onConnected, onTranscriptChang
     }, [runwaySession]);
 
     async function handleConnect() {
-        if (!avatarId || isConnecting || runwaySession) {
+        if (!avatarId || isConnecting || runwaySession || hasStartedRef.current) {
             return;
         }
+
+        hasStartedRef.current = true;
 
         try {
             setIsConnecting(true);
@@ -121,10 +124,12 @@ export function RunwayCharacterStage({ sessionId, onConnected, onTranscriptChang
             setRunwaySession(response);
             onConnected?.();
         } catch (connectError) {
+            hasStartedRef.current = false;
+            console.error("Runway SDK Connection Error:", connectError);
             setError(
                 connectError instanceof Error
                     ? connectError.message
-                    : "Runway Character failed to connect",
+                    : "Runway Character failed to connect. Manual transcript mode is still available.",
             );
         } finally {
             setIsConnecting(false);
@@ -220,6 +225,7 @@ export function RunwayCharacterStage({ sessionId, onConnected, onTranscriptChang
                         audio
                         video={false}
                         onError={(avatarError) => {
+                            console.error("Runway SDK Avatar Error:", avatarError);
                             setError(
                                 avatarError instanceof Error ? avatarError.message : String(avatarError),
                             );
@@ -256,7 +262,7 @@ function RunwayTranscriptListener({ onTranscriptChange }: { onTranscriptChange: 
         if (!transcript || transcript.length === 0) return;
         
         const lines = transcript.map(entry => {
-            const speaker = entry.participantIdentity === 'user' ? 'You' : 'Judge';
+            const speaker = entry.participantIdentity.startsWith('user') ? 'You' : 'Judge';
             return `${speaker}: ${entry.text}`;
         });
         

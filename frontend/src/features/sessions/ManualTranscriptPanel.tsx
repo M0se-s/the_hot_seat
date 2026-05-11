@@ -28,10 +28,10 @@ export function ManualTranscriptPanel({
     <Panel className="flex h-full min-h-75 flex-col p-0! overflow-hidden">
       <div className="border-b border-zinc-800 bg-zinc-900/80 px-4 py-3">
         <h3 className="text-sm font-semibold uppercase tracking-wider text-zinc-400">
-          Manual Transcript
+          Manual Transcript Fallback
         </h3>
         <p className="mt-1 text-xs leading-relaxed text-zinc-500">
-          Paste or type notes from your pressure session here. This fallback ensures you have a record even if the live transcript fails.
+          Runway transcript may be incomplete. Paste or type key judge/user exchanges here before ending the session.
         </p>
       </div>
 
