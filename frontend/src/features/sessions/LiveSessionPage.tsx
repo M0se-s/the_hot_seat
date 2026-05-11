@@ -176,7 +176,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
   return (
     <AppShell>
       {/* Header */}
-      <div className="mx-auto max-w-7xl px-6 pt-10">
+      <div className="mx-auto max-w-7xl pt-4">
         <div className="flex items-center justify-between border-b border-zinc-200 pb-4 dark:border-zinc-800">
           <div>
             <p className="text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80 mb-1">
@@ -191,7 +191,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
       </div>
 
       {/* Main Layout - Normal Scrolling */}
-      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 px-6 py-8 lg:grid-cols-[minmax(0,1fr)_420px]">
+      <main className="mx-auto grid max-w-7xl grid-cols-1 gap-6 py-8 lg:grid-cols-[minmax(0,1fr)_420px]">
         
         {/* Left Column: Stage (Sticky) & Transcript */}
         <section className="min-w-0 space-y-6">
