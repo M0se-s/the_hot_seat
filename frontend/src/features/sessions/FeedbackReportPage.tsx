@@ -189,7 +189,7 @@ export function FeedbackReportPage({ sessionId }: FeedbackReportPageProps) {
           </div>
           <Link href={routes.dashboard}>
             <Button variant="secondary" size="sm">
-              Return to Command Center
+              Return to Dashboard
             </Button>
           </Link>
         </div>

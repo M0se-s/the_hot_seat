@@ -162,7 +162,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
             <div className="mt-6">
               <Link href={routes.dashboard}>
                 <Button variant="secondary" size="sm">
-                  ← Back to Command Center
+                  ← Back to Dashboard
                 </Button>
               </Link>
             </div>
@@ -200,7 +200,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
                 d="M10 19l-7-7m0 0l7-7m-7 7h18"
               />
             </svg>
-            Back to Command Center
+            Back to Dashboard
           </Link>
         </div>
 
@@ -208,7 +208,7 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
         <Panel as="section" className="space-y-4">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 flex-1">
-          <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80">
+              <p className="mb-1 text-xs font-semibold uppercase tracking-[0.2em] text-red-500/80">
                 Case File
               </p>
               <h1 className="text-2xl font-bold tracking-tight text-zinc-900 dark:text-zinc-100">
@@ -238,19 +238,8 @@ export function ProjectDetailPage({ projectId }: ProjectDetailPageProps) {
               <span className="text-zinc-300">
                 {project.evidenceCount === 0
                   ? "None"
-                  : `${project.evidenceCount} source${
-                      project.evidenceCount > 1 ? "s" : ""
-                    }`}
-              </span>
-            </span>
-            <span>
-              <span className="text-zinc-600">Status:</span>{" "}
-              <span className="text-zinc-300">
-                {project.status === "draft"
-                  ? "Draft"
-                  : project.status === "ready"
-                  ? "Ready"
-                  : "Archived"}
+                  : `${project.evidenceCount} source${project.evidenceCount > 1 ? "s" : ""
+                  }`}
               </span>
             </span>
             {sessionType && (

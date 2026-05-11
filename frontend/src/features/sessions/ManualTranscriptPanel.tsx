@@ -37,7 +37,7 @@ export function ManualTranscriptPanel({
 
       <textarea
         className="w-full flex-1 resize-none bg-zinc-950 p-4 font-sans text-sm leading-relaxed text-zinc-300 placeholder-zinc-700 focus:outline-none focus:ring-0"
-        placeholder="Type session notes, key questions asked, or paste a rough transcript..."
+        placeholder="Paste live session notes or a rough transcript here..."
         value={transcript}
         onChange={(e) => handleChange(e.target.value)}
       />

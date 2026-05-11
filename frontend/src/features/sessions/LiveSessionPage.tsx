@@ -163,7 +163,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
               </Panel>
             )}
 
-            <div className="flex-1 min-h-[300px]">
+            <div className="flex-1 min-h-75">
               <ManualTranscriptPanel
                 value={transcriptText}
                 onChange={setTranscriptText}
@@ -201,7 +201,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
             {/* Evidence Quick Ref */}
             <Panel>
               <h3 className="mb-4 text-xs font-semibold uppercase tracking-wider text-zinc-500 dark:text-zinc-500">
-                Evidence Sidebar
+                Source Context
               </h3>
               {project.extractedContext && project.extractedContext.length > 0 ? (
                 <ul className="space-y-2 max-h-48 overflow-y-auto">
@@ -214,8 +214,7 @@ export function LiveSessionPage({ sessionId }: LiveSessionPageProps) {
                 </ul>
               ) : (
                 <p className="text-xs italic text-zinc-400 dark:text-zinc-600">
-                  No evidence loaded.{" "}
-                  Add pasted text or upload a source file to generate context before the next session.
+                  No source material loaded. Add pasted text or upload a PDF/TXT source before the next session.
                 </p>
               )}
             </Panel>

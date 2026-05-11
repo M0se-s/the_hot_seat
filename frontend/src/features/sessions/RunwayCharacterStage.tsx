@@ -138,7 +138,7 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
 
     if (isLoading) {
         return (
-            <Panel className="flex min-h-[400px] items-center justify-center p-6">
+            <Panel className="flex min-h-100 items-center justify-center p-6">
                 <p className="text-sm text-zinc-500">Connecting Runway Character...</p>
             </Panel>
         );
@@ -222,7 +222,7 @@ export function RunwayCharacterStage({ sessionId }: RunwayCharacterStageProps) {
                     >
                         <div className="space-y-4">
                             <div className="overflow-hidden rounded-xl border border-zinc-200 bg-zinc-100 dark:border-zinc-800 dark:bg-zinc-950">
-                                <AvatarVideo className="h-[360px] w-full" />
+                                <AvatarVideo className="h-90 w-full" />
                             </div>
 
                             <div className="flex justify-end">

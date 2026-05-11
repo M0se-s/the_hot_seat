@@ -16,7 +16,7 @@ export function NewProjectPage() {
             <svg className="mr-1.5 h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
-            Back to Command Center
+            Back to Dashboard
           </Link>
           <h1 className="text-2xl font-bold tracking-tight text-zinc-100">
             Open New Case File

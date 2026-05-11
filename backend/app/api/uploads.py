@@ -72,6 +72,8 @@ async def upload_project_file(
             detail=f"File too large. Max size is {settings.max_upload_size_mb} MB.",
         )
 
+    cleaned_text = ""
+
     try:
         extracted_text = extract_text_from_source(
             content=content,
@@ -79,20 +81,23 @@ async def upload_project_file(
             content_type=content_type,
         )
         cleaned_text = clean_extracted_text(extracted_text)
+    except SourceExtractionError:
+        # Fallback: keep the upload even if extraction fails. The raw file is still useful.
+        cleaned_text = ""
 
+    try:
         file_url = upload_bytes_to_supabase(
             content=content,
             original_filename=filename,
             content_type=content_type,
             project_id=str(project.id),
         )
-    except SourceExtractionError as exc:
-        raise HTTPException(status_code=400, detail=str(exc)) from exc
     except SupabaseStorageError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
 
     project.file_urls = [*project.file_urls, file_url]
-    project.extracted_context = [*project.extracted_context, cleaned_text]
+    if cleaned_text:
+        project.extracted_context = [*project.extracted_context, cleaned_text]
 
     db.commit()
     db.refresh(project)

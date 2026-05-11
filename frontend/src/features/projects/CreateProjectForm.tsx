@@ -39,7 +39,7 @@ export function CreateProjectForm() {
     }
     load();
   }, []);
-  
+
   const hasEvidence = evidence.trim() !== "";
   const isValid =
     title.trim() !== "" &&
@@ -88,7 +88,7 @@ export function CreateProjectForm() {
             type="text"
             value={title}
             onChange={(e) => setTitle(e.target.value)}
-            placeholder="e.g. Q3 Earnings Script, Product Launch Deck"
+            placeholder="Hackathon Demo Project"
             className="mt-1.5 block w-full rounded-md border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/50"
           />
         </div>
@@ -101,7 +101,7 @@ export function CreateProjectForm() {
             id="description"
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            placeholder="What are we trying to achieve? Who is the audience?"
+            placeholder="What should the panel pressure-test?"
             className="mt-1.5 block h-20 w-full resize-none rounded-md border border-zinc-800 bg-zinc-900/80 px-3 py-2 text-sm text-zinc-100 placeholder:text-zinc-600 focus:border-red-500/50 focus:outline-none focus:ring-1 focus:ring-red-500/50"
           />
         </div>
@@ -114,7 +114,7 @@ export function CreateProjectForm() {
       {!hasEvidence && (
         <div className="rounded-md border border-amber-900/40 bg-amber-950/20 px-4 py-3">
           <p className="text-xs leading-relaxed text-amber-300">
-            No evidence loaded. The Hot Seat will be weaker until source material is provided.
+            No source material yet. Add pasted text now or upload a PDF/TXT source after creating the case file.
           </p>
         </div>
       )}

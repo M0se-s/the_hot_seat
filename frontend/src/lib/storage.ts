@@ -1,4 +1,4 @@
-import { mockProjects } from "./mock-data";
+import { mockFeedbackReport, mockProjects } from "./mock-data";
 import type { Project, Session, FeedbackReport } from "./types";
 
 const PROJECTS_KEY = "hot-seat.projects";
@@ -7,8 +7,9 @@ const FEEDBACK_KEY = "hot-seat.feedback";
 
 // Bump this version when mock seed data changes significantly.
 // It triggers a refresh of mock projects in localStorage.
-const SEED_VERSION = "2026-05-10-v2";
+const SEED_VERSION = "2026-05-11-v2";
 const SEED_VERSION_KEY = "hot-seat.seed-version";
+const DEMO_SESSION_ID = "session-hackathon-demo";
 
 function isBrowser() {
   return typeof window !== "undefined";
@@ -55,9 +56,18 @@ export function getStoredProjects(): Project[] {
           status: existing.status,
           lastVerdict: existing.lastVerdict,
           // Use mock's richer content if existing is empty
-          pastedTexts: existing.pastedTexts?.length > 0 ? existing.pastedTexts : mock.pastedTexts,
-          extractedContext: existing.extractedContext?.length > 0 ? existing.extractedContext : mock.extractedContext,
-          suggestedQuestions: existing.suggestedQuestions?.length > 0 ? existing.suggestedQuestions : mock.suggestedQuestions,
+          pastedTexts:
+            existing.pastedTexts?.length > 0
+              ? existing.pastedTexts
+              : mock.pastedTexts,
+          extractedContext:
+            existing.extractedContext?.length > 0
+              ? existing.extractedContext
+              : mock.extractedContext,
+          suggestedQuestions:
+            existing.suggestedQuestions?.length > 0
+              ? existing.suggestedQuestions
+              : mock.suggestedQuestions,
         });
       }
     }
@@ -78,10 +88,48 @@ export function getStoredSessions(): Session[] {
   if (!isBrowser()) return [];
 
   const raw = window.localStorage.getItem(SESSIONS_KEY);
-  if (!raw) return [];
+  if (!raw) {
+    const now = new Date().toISOString();
+    const seeded: Session[] = [
+      {
+        id: DEMO_SESSION_ID,
+        projectId: "project-hackathon-demo",
+        state: "ended",
+        durationSeconds: 300,
+        activeJudgeId: "judge-rowan-pierce",
+        transcript: mockFeedbackReport.transcript,
+        startedAt: now,
+        endedAt: now,
+      },
+    ];
+    window.localStorage.setItem(SESSIONS_KEY, JSON.stringify(seeded));
+    saveStoredFeedback(DEMO_SESSION_ID, mockFeedbackReport);
+    return seeded;
+  }
 
   try {
-    return JSON.parse(raw) as Session[];
+    const stored = JSON.parse(raw) as Session[];
+    const hasDemoSession = stored.some(
+      (session) => session.id === DEMO_SESSION_ID,
+    );
+    if (!hasDemoSession) {
+      const now = new Date().toISOString();
+      stored.unshift({
+        id: DEMO_SESSION_ID,
+        projectId: "project-hackathon-demo",
+        state: "ended",
+        durationSeconds: 300,
+        activeJudgeId: "judge-rowan-pierce",
+        transcript: mockFeedbackReport.transcript,
+        startedAt: now,
+        endedAt: now,
+      });
+      window.localStorage.setItem(SESSIONS_KEY, JSON.stringify(stored));
+    }
+    if (!getStoredFeedback(DEMO_SESSION_ID)) {
+      saveStoredFeedback(DEMO_SESSION_ID, mockFeedbackReport);
+    }
+    return stored;
   } catch {
     return [];
   }
@@ -105,7 +153,13 @@ export function getStoredFeedback(sessionId: string): FeedbackReport | null {
   }
 }
 
-export function saveStoredFeedback(sessionId: string, feedback: FeedbackReport) {
+export function saveStoredFeedback(
+  sessionId: string,
+  feedback: FeedbackReport,
+) {
   if (!isBrowser()) return;
-  window.localStorage.setItem(`${FEEDBACK_KEY}.${sessionId}`, JSON.stringify(feedback));
+  window.localStorage.setItem(
+    `${FEEDBACK_KEY}.${sessionId}`,
+    JSON.stringify(feedback),
+  );
 }

@@ -105,69 +105,31 @@ export const mockProjects: Project[] = [
     sessionTypeId: "session-demo-panel",
     evidenceCount: 1,
     pastedTexts: [
-      "The Hot Seat is a factual crisis rehearsal room for conversations you cannot afford to fumble.\n\nThe system lets users create a case file, add pasted source material or upload PDF/TXT documents, generate source-grounded context and pressure questions, enter a live Hot Seat session with a Runway Character judge, and receive a credibility report after the session.\n\nThe MVP uses one active Runway Character at a time. The full judge panel is visible in the interface, but the first judge in the selected session type becomes the live active judge. For the Demo Panel, Rowan Pierce is the active judge.\n\nThe system tracks the quality of answers through the transcript and source materials. It looks for evasions, unsupported claims, vague ownership, weak timelines, contradictions, and trust recovery moments.\n\nThe post-session credibility report is generated from the transcript and project materials. It includes a final verdict, trust score, judge scoring, strengths, weaknesses, weakest moment, best moment, and suggested stronger answers.\n\nThe MVP intentionally avoids fake evidence, fake companies, fake metrics, fictional incidents, and generated claims that are not grounded in the materials."
+      "The Hot Seat is a factual crisis rehearsal room for conversations you cannot afford to fumble.\n\nThe system lets users create a case file, add pasted source material or upload PDF/TXT documents, generate source-grounded context and pressure questions, enter a live Hot Seat session with a Runway Character judge, and receive a credibility report after the session.\n\nThe MVP uses one active Runway Character at a time. The full judge panel is visible in the interface, but the first judge in the selected session type becomes the live active judge. For the Demo Panel, Rowan Pierce is the active judge.\n\nThe system tracks the quality of answers through the transcript and source materials. It looks for evasions, unsupported claims, vague ownership, weak timelines, contradictions, and trust recovery moments.\n\nThe post-session credibility report is generated from the transcript and project materials. It includes a final verdict, trust score, judge scoring, strengths, weaknesses, weakest moment, best moment, and suggested stronger answers.\n\nThe MVP keeps claims grounded in the materials and avoids unsupported additions.",
     ],
     fileUrls: [],
     extractedContext: [
-      "The Hot Seat is a factual crisis rehearsal room — not generic roleplay or AI coaching.",
+      "The Hot Seat is a factual crisis rehearsal room — not generic roleplay or AI pep talk.",
       "Users create a case file, upload or paste source material, then enter a live session with a Runway Character judge.",
       "The active judge for the Demo Panel is Rowan Pierce — Demo Judge.",
       "The system tracks evasions, unsupported claims, vague ownership, weak timelines, and trust recovery moments.",
       "The credibility report includes: final verdict, trust score, judge scoring, strengths, weaknesses, and stronger answer suggestions.",
-      "The MVP intentionally avoids fake evidence, fake metrics, and generated claims not grounded in the materials.",
-      "Source materials ground the entire session — answers not supported by the materials will be flagged."
+      "The MVP keeps claims grounded in the materials and avoids unsupported additions.",
+      "Source materials ground the entire session — answers not supported by the materials will be flagged.",
     ],
     suggestedQuestions: [
       "What is the moment people will remember from this demo?",
-      "What makes this Runway-native instead of generic roleplay?",
-      "What claim in your pitch is actually supported by the current materials?",
-      "Who is this painfully for — and how do you know it is not just founders?",
-      "What is not live yet in the demo, and why did you cut it?",
-      "If Runway fails mid-demo, what does the user experience?",
-      "What is the most at-risk claim you are making today?"
+      "What evidence do you have that the system can do that today?",
+      "What is actually live in the demo right now?",
+      "What is not included yet, and why?",
+      "Who is this painfully for?",
+      "What claim is most at risk today?",
+      "If Runway fails mid-demo, what does the user do?",
     ],
     status: "ready",
     lastVerdict: "Not tested yet",
     createdAt: "2026-05-08T12:00:00Z",
     updatedAt: "2026-05-10T12:00:00Z",
-  },
-  {
-    id: "project-crisis-response",
-    title: "Crisis Response Case",
-    description:
-      "Rehearse a high-stakes response using only pasted source materials and documented claims.",
-    sessionTypeId: "session-crisis-panel",
-    evidenceCount: 0,
-    pastedTexts: [],
-    fileUrls: [],
-    extractedContext: [],
-    suggestedQuestions: [
-      "What is the single most damaging fact in the source material?",
-      "Who is accountable for the failure, and have you named them?"
-    ],
-    status: "draft",
-    lastVerdict: "Not tested yet",
-    createdAt: "2026-05-08T10:30:00Z",
-    updatedAt: "2026-05-08T10:30:00Z",
-  },
-  {
-    id: "project-pitch-pressure",
-    title: "Pitch Pressure Test",
-    description:
-      "Stress-test positioning, target user clarity, and unsupported business claims before a live pitch.",
-    sessionTypeId: "session-pitch-panel",
-    evidenceCount: 0,
-    pastedTexts: [],
-    fileUrls: [],
-    extractedContext: [],
-    suggestedQuestions: [
-      "Who is this painfully for, and how do you know?",
-      "Why would someone pay for this instead of building it themselves?"
-    ],
-    status: "draft",
-    lastVerdict: "Not tested yet",
-    createdAt: "2026-05-08T09:00:00Z",
-    updatedAt: "2026-05-08T09:00:00Z",
   },
 ];
 
@@ -189,11 +151,13 @@ export const mockPressureQuestions: Record<string, string[]> = {
     "If a competitor copied your pitch word-for-word, what would they still be missing?",
   ],
   "session-demo-panel": [
-    "What is the moment people will remember?",
-    "What makes this Runway-native instead of generic roleplay?",
-    "What claim is actually supported by the materials?",
-    "If the demo crashed halfway through, what would the audience still take away?",
-    "What is the one thing you are afraid they will ask?",
+    "What is the moment people will remember from this demo?",
+    "What evidence do you have that the system can do that today?",
+    "What is actually live in the demo right now?",
+    "What is not included yet, and why?",
+    "Who is this painfully for?",
+    "What claim is most at risk today?",
+    "If Runway fails mid-demo, what does the user do?",
   ],
 };
 
@@ -201,52 +165,65 @@ export const mockPressureQuestions: Record<string, string[]> = {
 
 export const mockFeedbackReport: FeedbackReport = {
   finalVerdict: "Strong with gaps",
-  overallScore: 78,
+  overallScore: 82,
   scoring: {
     judges: [
       {
         judgeName: "Rowan Pierce",
         category: "Demo Judge",
-        score: 85,
+        score: 88,
         label: "Medium Support",
-        notes: "Strong opening, but the wow moment was delayed by unnecessary background context.",
+        notes:
+          "Clear demo path, but the memorable moment should land faster and harder.",
       },
       {
         judgeName: "Nova Reed",
         category: "Product Judge",
-        score: 70,
-        label: "Low Support",
-        notes: "Failed to clearly define the immediate target user. 'Anyone' is not a market.",
+        score: 76,
+        label: "Medium Support",
+        notes:
+          "Target user was named, but the proof for trust-loss detection is still thin.",
       },
       {
         judgeName: "Victor Quell",
         category: "Finance Judge",
-        score: 80,
-        label: "Low Support",
-        notes: "Good recovery on the integration limits, but revenue assumptions are completely unsupported by the provided evidence.",
-      }
-    ]
+        score: 82,
+        label: "Medium Support",
+        notes:
+          "Good scope discipline, but the value proof needs tighter evidence from the materials.",
+      },
+    ],
   },
   feedback: [
-    "You pivoted to the roadmap when asked for current metrics.",
-    "Claiming 10x ROI without specific case study data deteriorates credibility immediately."
+    "You clearly separated what is live today from what was cut for stability.",
+    "The trust-loss detection claim still lacks measurable evidence beyond transcript analysis.",
   ],
   strengths: [
-    "Admitting the integration limitation upfront and focusing on the core value prop."
+    "Clear separation between live demo features and future scope.",
+    "Built-in fallback for Runway failure is credible and user-first.",
   ],
   weaknesses: [
-    "The answer broadened the target user without evidence from the provided materials."
+    "Trust-loss detection is not yet backed by measurable proof beyond transcript analysis.",
   ],
-  bestMoment: "Admitting the integration limitation upfront and focusing on the core value prop.",
-  weakestMoment: "Pivot to roadmap when asked for current metrics.",
+  bestMoment:
+    "Naming what is live today and what was intentionally cut for stability.",
+  weakestMoment:
+    "Claiming trust-loss detection without measurable proof beyond transcript analysis.",
   suggestedStrongerAnswers: [
-    "Our first user is a hackathon team or founder preparing for a high-stakes demo, because that is the scenario supported by the current materials."
+    "In the MVP, trust-loss detection is based on transcript analysis against source materials; a behavioral scoring model is future work.",
   ],
   transcript: [
+    "Judge: What is the moment people will remember from this demo?",
+    "User: The moment is when the Runway Character catches an unsupported claim during the Hot Seat and forces the user to answer directly.",
+    "Judge: What evidence do you have that the system can do that today?",
+    "User: The current MVP grounds the session in pasted or uploaded source materials, generates pressure questions from those materials, captures the transcript, and uses Featherless to produce a credibility report that flags unsupported claims and evasions.",
+    "Judge: That describes the architecture. What is actually live in the demo?",
+    "User: The live demo includes project creation, source upload, generated context, generated pressure questions, a Runway Character session, manual transcript fallback, and a post-session credibility report.",
+    "Judge: What is not included yet?",
+    "User: The MVP does not include recap video, OCR, DOCX upload, multiple simultaneous Runway Characters, real authentication, or a full event timeline. Those were intentionally cut to keep the demo stable.",
     "Judge: Who is this painfully for?",
-    "User: This is for anyone who wants to pitch better. Sales teams, founders, students...",
-    "Judge: The source material only mentions founders preparing for a demo. Why broaden the scope?",
-    "User: Well, the roadmap will support everyone eventually.",
-    "Judge: We're not buying the roadmap. We're buying the product today. Who pays, how much, and why now?"
-  ]
+    "User: The first user is a founder, hackathon team, executive, or spokesperson preparing for a high-stakes pitch, crisis response, demo, or public explanation where vague or unsupported answers can damage credibility.",
+    "Judge: What claim are you making that is most at risk?",
+    "User: The risky claim is that the system can detect trust loss and recovery. In the MVP, that is based on transcript analysis and source-grounded feedback, not a live behavioral scoring model.",
+  ],
 };

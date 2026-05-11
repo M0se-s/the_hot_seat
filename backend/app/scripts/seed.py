@@ -82,7 +82,7 @@ def seed() -> None:
             },
             {
                 "name": "Pitch Panel",
-                "description": "For startup ideas, product pitches, business concepts, and investor-style pitch practice.",
+                "description": "For startup ideas, product pitches, business concepts, and investor-style pitch pressure tests.",
                 "judges": ["Nova Reed", "Victor Quell", "Elias Cross"],
             },
             {
@@ -94,9 +94,7 @@ def seed() -> None:
 
         for spec in session_type_specs:
             session_type = (
-                db.query(SessionType)
-                .filter(SessionType.name == spec["name"])
-                .first()
+                db.query(SessionType).filter(SessionType.name == spec["name"]).first()
             )
 
             if not session_type:

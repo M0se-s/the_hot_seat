@@ -64,7 +64,7 @@ SESSION_TYPES = [
     {
         "id": "session-pitch-panel",
         "name": "Pitch Panel",
-        "description": "For startup ideas, product pitches, business concepts, and investor-style pitch practice.",
+        "description": "For startup ideas, product pitches, business concepts, and investor-style pitch pressure tests.",
         "default_duration_seconds": 300,
         "judge_ids": [
             "judge-nova-reed",

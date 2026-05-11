@@ -10,19 +10,6 @@ interface ProjectCardProps {
   sessionType: SessionType | undefined;
 }
 
-function statusLabel(status: string): string {
-  switch (status) {
-    case "draft":
-      return "Draft";
-    case "ready":
-      return "Ready";
-    case "archived":
-      return "Archived";
-    default:
-      return status;
-  }
-}
-
 function formatDate(iso: string | undefined): string {
   if (!iso) {
     return "Unknown";
@@ -73,10 +60,6 @@ export function ProjectCard({ project, sessionType }: ProjectCardProps) {
                 ? "None"
                 : `${project.evidenceCount} source${project.evidenceCount > 1 ? "s" : ""}`}
             </span>
-          </span>
-          <span>
-            <span className="text-zinc-600">Case status:</span>{" "}
-            <span className="text-zinc-400">{statusLabel(project.status)}</span>
           </span>
           <span>
             <span className="text-zinc-600">Updated:</span>{" "}

@@ -43,7 +43,7 @@ export function EvidencePanel({ sourceText, evidenceCount }: EvidencePanelProps)
           </svg>
           <p className="text-sm font-semibold text-zinc-500">No evidence loaded.</p>
           <p className="mt-1 text-xs text-zinc-600">
-            A Hot Seat session needs source material before interrogation.
+            Add pasted text or upload a PDF/TXT source before entering the Hot Seat.
           </p>
         </Panel>
       )}

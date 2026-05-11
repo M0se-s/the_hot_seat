@@ -61,11 +61,8 @@ export function PressureQuestionsPanel({ questions }: PressureQuestionsPanelProp
             />
           </svg>
           <p className="text-xs leading-relaxed text-zinc-500">
-            <span className="font-medium text-zinc-400">
-              Questions are static mock data.
-            </span>{" "}
-            LLM-generated questions based on your source materials will be
-            available after backend integration.
+            Review these questions before entering the Hot Seat.
+            Regenerate after updating source material.
           </p>
         </div>
       </div>
