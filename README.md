@@ -1,41 +1,89 @@
 # The Hot Seat
 
-The Hot Seat is a web application that helps teams and individuals create, manage, and pressure-test projects using interactive "hot seat" sessions. Users can upload supporting materials (TXT or PDF), define the project's context and goals, and participate in simulated sessions where judges challenge the project with probing questions. Each session is recorded and analyzed, and detailed feedback is provided upon completion.
+The Hot Seat is a next-generation web platform for putting projects and ideas to the test in realistic, pressure-filled interview scenarios. Presenters upload or describe their project and must withstand tough, rapid-fire questions from a cast of digital “judges”—highly configurable Runway avatars powered by the Runway API.
 
-## Key Features
+The application is ideal for founders, students, or anyone prepping for investment panels, pitch events, or getting critical feedback. The Hot Seat mixes custom avatars, document analysis, and actionable feedback in a single, user-friendly application.
 
-- **Project Creation and Management:**  
-  Define projects with a title, detailed context, goals, and provide supplementary materials (TXT or PDF files, or pasted evidence).
+---
 
-- **Session Types and Judges:**  
-  Choose session types. Each has its own panel of virtual judges who take turns questioning the presenter in the "hot seat" format.
+## Features
 
-- **Simulated Judge Interactions:**  
-  Judges use custom avatars and personalities, pose challenging questions, and keep the session engaging with signature styles.
+### Project Submission & Material Upload
 
-- **Automated Feedback and Scoring:**  
-  After a session ends, the system provides automated analysis, feedback, scores, and a final verdict on performance.
+- Add projects with title, description, and context.
+- Upload supporting evidence (PDF or TXT files), or paste text for judge analysis.
+- Project materials are processed (using Python backend) with smart extraction and clean formatting for the session.
 
-- **Modern Frontend:**  
-  Built with React (Next.js) and TypeScript, offering an intuitive UI for uploading materials, managing sessions, and reviewing feedback.
+### Configurable Hot Seat Sessions
 
-- **Robust Backend:**  
-  Powered by FastAPI and SQLAlchemy, the backend handles user data, sessions, file uploads, and feedback processing.
+- Start live “hot seat” sessions for any project.
+- Select from a variety of session types, such as “Investor Pitch” or “Technical Review.”  
+- Each session features a panel of judges, powered by Runway avatars with unique personalities and roles.
+- Sessions are interactive and time-limited, simulating a real interview or feedback scenario.
 
-## Tech Stack
+### Runway API and Digital Judges
 
-- **Frontend:** React (Next.js), TypeScript, modular UI components  
-- **Backend:** Python (FastAPI), SQLAlchemy, PostgreSQL  
-- **File Handling:** TXT and PDF upload support (without OCR in the MVP)  
-- **APIs:** REST API endpoints for managing projects, sessions, and analysis
+- Integrates the Runway API for lifelike, AI-powered avatars to engage with you directly.
+- Judges are configured in the backend (with their name, role, avatarId, and personality).
+- Each session constructs a customized prompt that blends project context, judge personality, and signature pressure/question style.
+- Real-time sessions are launched and managed via the Runway API endpoints.
+
+### Automated Feedback & Transcripts
+
+- Every session is recorded and automatically analyzed.
+- The system generates judge feedback, session transcripts, and AI-powered improvement tips after each session.
+- Get scoring, feedback breakdown, and a final verdict right in your dashboard.
+
+### Modern Tech Stack
+
+- **Frontend:** Next.js (React) with TypeScript and modular UI components.
+- **Backend:** FastAPI (Python) with SQLAlchemy ORM and PostgreSQL.
+- **File Handling:** TXT and PDF upload and processing (plain-text only in MVP).
+- **Cloud/3rd Party:** Connects seamlessly to the Runway API for avatar characters.
+- **API Design:** RESTful endpoints for managing users, projects, sessions, and feedback.
+
+---
+
+## How It Works
+
+1. **Create a project:**  
+   Fill out project details and upload any supporting documents.
+
+2. **Start a Hot Seat session:**  
+   Choose your session type. The system selects a unique panel of judges using Runway avatars.
+
+3. **Enter the Hot Seat:**  
+   Judges (avatars) engage you with rapid-fire, high-pressure questions based on your submitted materials.
+
+4. **Get feedback:**  
+   After the session, review the transcript and receive detailed, AI-generated feedback, scoring, and suggestions.
+
+---
+
+## Architecture Highlights
+
+### Judges & Avatars
+
+- Judge configurations are stored with name, role, unique avatar ID, personality, and questioning approach.
+- Each session prompt blends avatar persona with project details, ensuring every interaction is realistic.
+- Prompts, evidence, and suggested questions are truncated and prioritized to stay within Runway API size limits.
+- Avatar sessions are started and managed using the Runway real-time sessions endpoint.
+
+### Automated Analysis
+
+- Feedback and scoring are generated by analyzing the full session transcript.
+- The system assigns scores, highlights key moments, and provides improvement suggestions.
+
+---
 
 ## Getting Started
 
 ### Prerequisites
 
 - Node.js and npm
-- Python 3.9 or later
+- Python 3.9 or higher
 - PostgreSQL
+- Runway API credentials
 
 ### Installation
 
@@ -47,26 +95,60 @@ The Hot Seat is a web application that helps teams and individuals create, manag
    python -m venv venv
    source venv/bin/activate
    pip install -r requirements.txt
-Configure your environment variables or update app/config.py with your database URL and settings.
-Run database migrations if any.
-Start the backend server:
-bash
-uvicorn app.main:app --reload
-Frontend
-Install dependencies:
-bash
-cd frontend
-npm install
-Start the frontend server:
-bash
-npm run dev
-Usage
-Go to the frontend URL, usually http://localhost:3000.
-Create a new project. Add a title, context/goals, and upload any supporting files.
-Start a session. Choose a session type and participate as your project is put in the "hot seat."
-After the session, view feedback and transcripts.
-Contributing
-Contributions are welcome. Please fork the repository and open a pull request.
+   ```
+2. Configure your environment variables (database connection and Runway API keys).
+3. Run database migrations if needed.
+4. Start the backend:
+   ```bash
+   uvicorn app.main:app --reload
+   ```
 
-License
-No explicit license file detected. If you would like to open-source this project, consider adding a license file.
+#### Frontend
+
+1. Install dependencies:
+   ```bash
+   cd frontend
+   npm install
+   ```
+2. Start the frontend:
+   ```bash
+   npm run dev
+   ```
+
+---
+
+## Usage
+
+1. Open your browser to http://localhost:3000.
+2. Create a project and upload PDFs, TXTs, or paste content.
+3. Start a session, select session type, and interact with Runway avatar judges.
+4. When the session ends, review feedback and transcripts in your dashboard.
+
+---
+
+## Contributing
+
+Contributions are welcome!
+1. Fork the repository.
+2. Create your feature branch (git checkout -b feature/MyFeature).
+3. Commit your changes.
+4. Push to your branch.
+5. Open a pull request.
+
+---
+
+## License
+
+No explicit license file detected. If you intend to open source this project, please add a LICENSE file.
+
+---
+
+## Acknowledgments
+
+- Built on [Runway API](https://runwayml.com/) for interactive AI avatars.
+- Uses FastAPI, React/Next.js, and PostgreSQL.
+- Document parsing uses reliable open-source libraries.
+
+---
+
+For more information, see the [GitHub repository](https://github.com/M0se-s/the_hot_seat).
